@@ -1,0 +1,884 @@
+<title>Balaji Weighbridge Build Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=JetBrains+Mono:wght@400;600&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+:root{
+  --bg:#F3F5F6; --surface:#FFFFFF; --surface-2:#E8ECEE; --ink:#172026; --muted:#55626B;
+  --line:#D3DADE; --line-strong:#8E9BA4;
+  --amber:#D99A00; --amber-ink:#8A5B00; --amber-soft:#FFF3D1;
+  --blue:#1E5B8C; --blue-soft:#E1ECF5;
+  --good:#1F7A4D; --warn:#9A5800; --bad:#B3261E;
+  --display:"Barlow Semi Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#11171B; --surface:#182127; --surface-2:#1F2A31; --ink:#E4EAEE; --muted:#9AA8B1;
+    --line:#2A363E; --line-strong:#55656F;
+    --amber:#F2B632; --amber-ink:#F2C45A; --amber-soft:#3A2E10;
+    --blue:#7DB3E0; --blue-soft:#18324A;
+    --good:#5FC28E; --warn:#F0A650; --bad:#FF8A80;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#11171B; --surface:#182127; --surface-2:#1F2A31; --ink:#E4EAEE; --muted:#9AA8B1;
+  --line:#2A363E; --line-strong:#55656F;
+  --amber:#F2B632; --amber-ink:#F2C45A; --amber-soft:#3A2E10;
+  --blue:#7DB3E0; --blue-soft:#18324A;
+  --good:#5FC28E; --warn:#F0A650; --bad:#FF8A80;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;padding-inline:16px;padding-block:0 64px}
+.wrap{max-width:1180px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);line-height:1.12;text-wrap:balance;margin:0}
+h1{font-size:clamp(2rem,4.6vw,3.1rem);font-weight:700;letter-spacing:-.01em}
+h2{font-size:clamp(1.55rem,3vw,2.05rem);font-weight:700}
+h3{font-size:1.25rem;font-weight:600;margin-top:.4rem}
+p,li{max-width:72ch}
+p{margin:0}
+a{color:var(--blue)}
+code,.mono{font-family:var(--mono);font-size:.86em}
+.muted{color:var(--muted)}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+
+/* header */
+header.top{display:grid;grid-template-columns:1fr auto;gap:28px;align-items:end;padding-block:40px 28px;border-bottom:3px solid var(--ink)}
+header.top .lede{margin-top:14px;font-size:1.08rem;color:var(--muted);max-width:64ch}
+.stub{font-family:var(--mono);font-size:.8rem;background:var(--surface);border:1px dashed var(--line-strong);padding:14px 16px;display:grid;grid-template-columns:auto auto;gap:4px 16px;min-width:0}
+.stub dt{color:var(--muted)} .stub dd{margin:0;text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.stub .hot{color:var(--bad)}
+.hazard{height:8px;background:repeating-linear-gradient(-45deg,var(--amber) 0 12px,var(--ink) 12px 24px);margin-top:0}
+@media (max-width:760px){header.top{grid-template-columns:1fr}.stub{grid-template-columns:1fr auto}}
+
+/* layout */
+.layout{display:grid;grid-template-columns:200px minmax(0,1fr);gap:40px;margin-top:32px}
+nav.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);align-self:start;font-size:.9rem}
+nav.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:2px;counter-reset:s}
+nav.toc li{counter-increment:s}
+nav.toc a{display:block;padding:5px 8px;border-left:2px solid var(--line);color:var(--muted);text-decoration:none}
+nav.toc a::before{content:counter(s,decimal-leading-zero) "  ";font-family:var(--mono);font-size:.75rem}
+nav.toc a:hover,nav.toc a:focus-visible{color:var(--ink);border-left-color:var(--amber);outline:none}
+@media (max-width:980px){
+  .layout{grid-template-columns:1fr;gap:20px}
+  nav.toc{position:static}
+  nav.toc ol{display:flex;flex-wrap:wrap;gap:6px}
+  nav.toc a{border:1px solid var(--line);border-radius:3px;padding:3px 8px;background:var(--surface)}
+}
+main{display:grid;gap:56px;min-width:0}
+section{display:grid;gap:16px;min-width:0;scroll-margin-top:16px}
+section > .eyebrow{margin-bottom:-8px}
+
+/* verdict */
+.verdict{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--amber);padding:22px 24px;display:grid;gap:12px}
+.verdict ul{margin:0;padding-left:1.2em;display:grid;gap:6px}
+.callout{background:var(--amber-soft);border-left:4px solid var(--amber);padding:12px 16px}
+.callout.blue{background:var(--blue-soft);border-left-color:var(--blue)}
+
+/* tables */
+.tbl{min-width:0;overflow-x:auto;border:1px solid var(--line);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{text-align:left;vertical-align:top;padding:9px 12px;border-bottom:1px solid var(--line)}
+th{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--surface-2);font-weight:600;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.n{font-family:var(--mono);color:var(--muted);font-size:.8rem;white-space:nowrap}
+tr.total td{font-weight:700;background:var(--surface-2)}
+.tbl.wide table{min-width:980px}
+.tbl.mid table{min-width:720px}
+.pill{display:inline-block;font-family:var(--mono);font-size:.7rem;padding:1px 7px;border-radius:2px;white-space:nowrap;border:1px solid}
+.pill.buy{color:var(--blue);border-color:var(--blue);background:var(--blue-soft)}
+.pill.own{color:var(--amber-ink);border-color:var(--amber);background:var(--amber-soft)}
+.pill.ots{color:var(--muted);border-color:var(--line-strong)}
+.pill.chk{color:var(--bad);border-color:var(--bad)}
+
+/* options */
+.opts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.opt{background:var(--surface);border:1px solid var(--line);padding:18px;display:grid;gap:10px;align-content:start}
+.opt.pick{border:2px solid var(--amber)}
+.opt .tag{font-family:var(--mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.opt.pick .tag{color:var(--amber-ink)}
+.opt h3{margin:0}
+.opt .cost{font-family:var(--mono);font-weight:600;font-size:1.05rem;font-variant-numeric:tabular-nums}
+.opt ul{margin:0;padding-left:1.1em;display:grid;gap:4px;font-size:.93rem}
+@media (max-width:860px){.opts{grid-template-columns:1fr}}
+
+/* figures */
+figure{margin:0;min-width:0;background:var(--surface);border:1px solid var(--line);padding:16px}
+figure .scroll{overflow-x:auto}
+figure svg{display:block;width:100%;height:auto;font-family:var(--body)}
+figure.big svg{min-width:1040px}
+figure.med svg{min-width:820px}
+figcaption{margin-top:12px;font-size:.92rem;color:var(--muted);max-width:none}
+.legend{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:10px;font-size:.85rem;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:18px;height:12px;display:inline-block;border:1.5px solid}
+.sw.buy{background:var(--blue-soft);border-color:var(--blue)}
+.sw.own{background:var(--amber-soft);border-color:var(--amber)}
+.sw.ots{background:var(--surface);border-color:var(--line-strong)}
+.sw.man{background:var(--surface);border:1.5px dashed var(--line-strong)}
+.sw.sec{background:transparent;border:0;border-top:2.5px solid var(--amber);height:0;width:22px}
+
+/* svg classes */
+.z{fill:none;stroke:var(--line-strong);stroke-width:1;stroke-dasharray:5 4}
+.zt{fill:var(--muted);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.b{fill:var(--surface);stroke:var(--line-strong);stroke-width:1.2}
+.bi{fill:var(--surface);stroke:var(--amber);stroke-width:1}
+.b-buy{fill:var(--blue-soft);stroke:var(--blue);stroke-width:1.4}
+.b-own{fill:var(--amber-soft);stroke:var(--amber);stroke-width:1.4}
+.b-man{fill:var(--surface);stroke:var(--line-strong);stroke-width:1.2;stroke-dasharray:4 3}
+.b-sec{fill:var(--amber-soft);stroke:var(--amber);stroke-width:2}
+.b-hold{fill:var(--surface);stroke:var(--bad);stroke-width:1.6}
+.t{fill:var(--ink);font-size:12.5px;font-weight:600}
+.ts{fill:var(--muted);font-size:10.8px}
+.tn{fill:var(--muted);font-family:var(--mono);font-size:10.5px}
+.al{fill:var(--muted);font-family:var(--mono);font-size:10.5px}
+.al-s{fill:var(--amber-ink);font-family:var(--mono);font-size:10.5px;font-weight:600}
+.al-b{fill:var(--bad);font-family:var(--mono);font-size:10.5px}
+.a{fill:none;stroke:var(--muted);stroke-width:1.4}
+.a-s{fill:none;stroke:var(--amber);stroke-width:2.4}
+.a-b{fill:none;stroke:var(--bad);stroke-width:1.4;stroke-dasharray:5 4}
+.mk{fill:var(--muted)} .mk-s{fill:var(--amber)} .mk-b{fill:var(--bad)}
+.xk{stroke:var(--bad);stroke-width:2.2}
+
+/* steps */
+ol.steps{list-style:none;margin:0;padding:0;display:grid;gap:12px;counter-reset:st}
+ol.steps > li{counter-increment:st;display:grid;grid-template-columns:44px minmax(0,1fr);gap:14px;background:var(--surface);border:1px solid var(--line);padding:14px 16px;max-width:none}
+ol.steps > li::before{content:counter(st,decimal-leading-zero);font-family:var(--mono);font-weight:600;color:var(--amber-ink);font-size:1.05rem}
+ol.steps h3{margin:0 0 4px;font-size:1.12rem}
+ol.steps ul{margin:6px 0 0;padding-left:1.1em;display:grid;gap:3px;font-size:.94rem}
+ol.steps .when{font-family:var(--mono);font-size:.75rem;color:var(--muted);margin-left:8px;font-weight:400}
+
+/* gantt */
+.gantt{min-width:0;overflow-x:auto;border:1px solid var(--line);background:var(--surface)}
+.g{display:grid;grid-template-columns:230px repeat(18,minmax(30px,1fr));min-width:820px;font-size:.84rem}
+.g > div{border-bottom:1px solid var(--line);padding:6px 0;min-height:32px}
+.g .lbl{padding:6px 10px;border-right:1px solid var(--line)}
+.g .wk{font-family:var(--mono);font-size:.7rem;color:var(--muted);text-align:center;background:var(--surface-2)}
+.g .bar{margin:4px 2px;border-radius:2px;background:var(--line-strong);min-height:20px;padding:0}
+.g .bar.own{background:var(--amber)}
+.g .bar.buy{background:var(--blue)}
+.g .bar.civ{background:var(--muted)}
+.g .bar.mile{background:var(--bad)}
+
+/* grid of cards (security) */
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);padding:16px 18px;display:grid;gap:8px;align-content:start}
+.card h3{margin:0;font-size:1.15rem}
+.card ul{margin:0;padding-left:1.1em;display:grid;gap:5px;font-size:.94rem}
+@media (max-width:760px){.cards{grid-template-columns:1fr}}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);padding:14px}
+.kpi b{display:block;font-family:var(--mono);font-size:1.25rem;font-variant-numeric:tabular-nums}
+.kpi span{font-size:.86rem;color:var(--muted)}
+@media (max-width:760px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+footer{margin-top:56px;padding-top:16px;border-top:1px solid var(--line);font-size:.85rem;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+html{scroll-behavior:smooth}
+</style>
+
+<div class="wrap">
+<header class="top">
+  <div>
+    <div class="eyebrow">Shri Balaji Associates · Chandrapur · build plan</div>
+    <h1>Digital weighbridge with automatic truck weighing, built in-house</h1>
+    <p class="lede">A reading of Essae Digitronics' offer for a digital weighbridge and its AWS&nbsp;2.0 automation, and a plan to build the same system yourselves. It covers every integration, the architecture, security, performance, a step-by-step rollout, and what it would take me to build.</p>
+  </div>
+  <dl class="stub">
+    <dt>Quote ref</dt><dd>EDPL/TSD/KRJ/R1</dd>
+    <dt>Dated</dt><dd>02-09-2026</dd>
+    <dt>Valid</dt><dd class="hot">1 month · ~02-10-2026</dd>
+    <dt>Weighbridge</dt><dd>₹14,35,000</dd>
+    <dt>AWS 2.0 (optional)</dt><dd>₹6,90,000</dd>
+    <dt>IGST</dt><dd>18% extra</dd>
+    <dt>With GST</dt><dd>₹25,07,500</dd>
+  </dl>
+</header>
+<div class="hazard" aria-hidden="true"></div>
+
+<div class="layout">
+<nav class="toc" aria-label="Sections">
+  <ol>
+    <li><a href="#verdict">Short answer</a></li>
+    <li><a href="#quote">What Essae is selling</a></li>
+    <li><a href="#options">Three ways to build it</a></li>
+    <li><a href="#architecture">Architecture</a></li>
+    <li><a href="#flow">How a truck is weighed</a></li>
+    <li><a href="#integrations">Integrations</a></li>
+    <li><a href="#hardware">Hardware list</a></li>
+    <li><a href="#software">Software stack</a></li>
+    <li><a href="#security">Security</a></li>
+    <li><a href="#performance">Performance</a></li>
+    <li><a href="#steps">Step-by-step rollout</a></li>
+    <li><a href="#effort">Effort and cost</a></li>
+    <li><a href="#ask">Ask Essae first</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<!-- 01 -->
+<section id="verdict">
+  <div class="eyebrow">01 · Short answer</div>
+  <h2>Buy the weighing part. Build the software.</h2>
+  <div class="verdict">
+    <ul>
+      <li><strong>The quote has two separate systems.</strong> One is a certified weighing machine: steel platform, digital load cells, junction box and the IWT-186 weight indicator. The other is an automation layer, AWS&nbsp;2.0: cameras that read number plates (ANPR), an RFID tag reader, a boom barrier, traffic lights, a hooter, and software that ties them together.</li>
+      <li><strong>Don't try to make the weighing machine yourself.</strong> A weighbridge used to bill by the tonne must be an approved model under the Legal Metrology Act 2009, installed by a licensed maker and stamped by the Legal Metrology department. Your ₹93/MT contractor billing counts as trade. Buy this part from Essae or another approved maker.</li>
+      <li><strong>Everything around it can be built in-house.</strong> Cameras, RFID, barriers and lights are standard off-the-shelf hardware. The software that runs them, and that links weighing to billing, Tally, the e-way bill and your owner dashboard, is where owning it pays off. I can write that software.</li>
+      <li><strong>It will not save money up front.</strong> Essae's automation bundle at ₹6.9L is competitively priced. Doing it in-house costs about ₹5–11L more at the start, because you also pay for a server, a firewall, software work and a security test. What you get for that is control: your own data, your own rules against weighing fraud, links to your billing, and room to add more weighbridges or sites.</li>
+      <li><strong>Timeline: about 15 weeks to go-live, 18 including the settling-in period.</strong> Civil works and stamping set the pace, not software. I can have the software ready and tested against simulated devices before the platform is even installed.</li>
+    </ul>
+  </div>
+  <div class="callout"><strong>My recommendation: Option C below.</strong> Buy Essae's weighbridge, and buy their AWS hardware too if the price holds, but only on open terms: the indicator's data format, admin access to the cameras and RFID reader, and no lock-in to their software. Then run your own software on top. The quote's validity runs out around 2 October 2026, so raise these points before you place the order.</div>
+</section>
+
+<!-- 02 -->
+<section id="quote">
+  <div class="eyebrow">02 · The document</div>
+  <h2>What Essae is selling, part by part</h2>
+  <p>Specs are taken from the 18-page offer. The last column says how you would source each part if you built the system yourselves.</p>
+  <div class="tbl wide">
+    <table>
+      <thead><tr><th>Part</th><th>What the offer says</th><th>What it does</th><th>In-house route</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Platform</strong><br><span class="muted">Oxygen Series 1600P</span></td><td>Orthotropic modular steel, IS 2062 FE 540 plate (yield 410 MPa), modules 1500 mm wide × 268 mm deep, shot blasted to SA 2½, epoxy 120 DFT, M20 Gr 10.9 bolts. <span class="pill chk">size &amp; capacity not stated</span></td><td>The deck the truck stands on</td><td><span class="pill buy">buy certified</span></td></tr>
+        <tr><td><strong>Load cells</strong><br><span class="muted">ESD186DN</span></td><td>Digital double-ended shear beam, 18.2 t or 34 t, accuracy class C3, RS-485 full duplex up to 1,200 m, IP67, 8–18 V DC, 200 Hz. <span class="pill chk">count not stated</span></td><td>Measure the load at each support point</td><td><span class="pill buy">buy certified</span></td></tr>
+        <tr><td><strong>Junction box</strong></td><td>Digital junction box with surge protection, IP66, lightning arrestors (JB-AL-SA type)</td><td>Joins the load-cell cables and protects them from lightning surges</td><td><span class="pill buy">buy certified</span></td></tr>
+        <tr><td><strong>Indicator</strong><br><span class="muted">IWT-186</span></td><td>15" touchscreen, quad-core 2 GHz fanless, 4 GB RAM / 64 GB SSD, Ethernet + Wi-Fi, powered RS-232 for a remote display, 10,000 counts, works at 5–40 °C. Up to 3 IP cameras, SMS, email, MySQL.</td><td>Shows the legal weight and sends it out as data</td><td><span class="pill buy">buy certified</span></td></tr>
+        <tr><td><strong>Weighsoft Triad Professional</strong></td><td>RS-232/TCP input, roles, masters, first and second weighing, multiple materials, cameras, SMS/email, reports, encrypted passwords, backups, MSSQL. SAP/ERP, 4 cameras and JSON web reports are marked optional.</td><td>Ticketing and reports software on a PC</td><td><span class="pill own">build</span></td></tr>
+        <tr><td><strong>AWS 2.0</strong><br><span class="muted">₹6,90,000</span></td><td>2 ANPR cameras + 1 top camera, poles, 1 boom barrier, hooter, RFID reader + 2 antennas + 2 poles, 100 windshield tags, 8-port switch, 300 m 4-core cable, 120 m CAT6, 50 m power cable</td><td>Identifies the truck, controls the gate, checks the truck's position, keeps photo evidence</td><td><span class="pill ots">off-the-shelf</span> <span class="pill own">build</span></td></tr>
+        <tr><td><strong>Your scope</strong></td><td>Foundation and control room to their drawings, electrical and earthing, unloading and storage, labour, welder, crane, hydraulic jacks, test weights and fees for stamping, PC (i5/i7, Windows 10/11 Pro), 80-column dot-matrix printer, 1 kVA UPS</td><td>Site work</td><td>Same in every option</td></tr>
+        <tr><td><strong>Terms</strong></td><td>30% advance, 70% before dispatch. Dispatch 4 weeks after the order. Warranty 12 months from installation or 14 from invoice, whichever ends first. Engineer free for 4 days, then ₹5,000/day. Freight and insurance included.</td><td></td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout blue"><strong>Gaps and contradictions to clear up before ordering.</strong> The platform size, capacity and number of load cells are never stated. The printer and UPS appear in Essae's AWS scope on page 16 and in your scope on page 17. The brochure says MySQL on one page and MSSQL on another. Only 1 boom barrier is priced, but the drawing shows 2. The AWS is called "sensor-free", yet the overview drawing shows vehicle position sensors. The IWT-186 is rated only up to 40&nbsp;°C, and Chandrapur regularly goes past 45&nbsp;°C in May, so the control room needs air-conditioning.</div>
+</section>
+
+<!-- 03 -->
+<section id="options">
+  <div class="eyebrow">03 · Build options</div>
+  <h2>Three ways to get the same system</h2>
+  <p>All figures are ex-GST and include the civil and site work you pay for in every option. Everything other than Essae's quoted prices is my estimate from September 2026 market rates. Get local quotes before you commit.</p>
+  <div class="opts">
+    <div class="opt">
+      <div class="tag">Option A · buy everything</div>
+      <h3>Essae full package</h3>
+      <div class="cost">≈ ₹32–41 L</div>
+      <ul>
+        <li>Fastest to set up and least risk. One vendor is answerable for everything.</li>
+        <li>Their software, their rules and their database. ERP and SAP links and extra cameras are paid add-ons.</li>
+        <li>You still need to add a firewall and network separation (about ₹1–2L). The quote leaves security out.</li>
+      </ul>
+    </div>
+    <div class="opt pick">
+      <div class="tag">Option C · recommended</div>
+      <h3>Essae hardware, your software</h3>
+      <div class="cost">≈ ₹37–52 L</div>
+      <ul>
+        <li>The certified weighbridge, plus Essae's AWS hardware if it comes with open access.</li>
+        <li>The edge server, central system, integrations and security are built and owned by you.</li>
+        <li>One supplier for the physical kit. You control the data, the fraud rules, billing and the owner's view.</li>
+      </ul>
+    </div>
+    <div class="opt">
+      <div class="tag">Option B · build the most</div>
+      <h3>Certified weighbridge only</h3>
+      <div class="cost">≈ ₹36–57 L</div>
+      <ul>
+        <li>Buy only the weighbridge. Source the cameras, RFID, booms and I/O yourselves.</li>
+        <li>You pick every brand, including cameras with the Indian STQC certification. There's more to coordinate and no single warranty covering it all.</li>
+        <li>Worth it once you run several weighbridges and want the same kit everywhere.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 04 -->
+<section id="architecture">
+  <div class="eyebrow">04 · Architecture</div>
+  <h2>Target architecture: yard, control room, central system</h2>
+  <p>Three tiers. Field devices talk only to the <strong>edge server</strong> in the control room, which weighs trucks even when the internet is down. The edge server connects outward to a <strong>central system</strong> at your head office or in an Indian cloud region. That central system holds the records, users, reports and every external integration.</p>
+  <figure class="big">
+    <div class="scroll">
+    <svg viewBox="0 0 1400 800" role="img" aria-label="Architecture: field devices in the yard connect over RS-485, PoE, coax and relay wiring to hubs in the control room. The hubs feed an edge server, which sends data out through a firewall over mutual TLS to a central system with proxy, identity, API, database, audit log and integration worker. The integration worker calls Tally, GST e-way bill and messaging services.">
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker>
+        <marker id="ahs" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="mk-s" d="M0,0 L10,5 L0,10 z"/></marker>
+      </defs>
+
+      <!-- Zone A: yard -->
+      <rect class="z" x="16" y="16" width="344" height="768"/>
+      <text class="zt" x="32" y="42">Weighbridge yard · field</text>
+      <rect class="b-buy" x="32" y="64" width="250" height="38"/><text class="t" x="157" y="88" text-anchor="middle">Platform + 8 digital load cells</text>
+      <line class="a" x1="157" y1="102" x2="157" y2="122" marker-end="url(#ah)"/><text class="al" x="165" y="116">RS-485</text>
+      <rect class="b-buy" x="32" y="124" width="250" height="38"/><text class="t" x="157" y="148" text-anchor="middle">Junction box + surge arrestor</text>
+      <rect class="b" x="32" y="184" width="250" height="38"/><text class="t" x="157" y="208" text-anchor="middle">Remote LED weight display</text>
+      <rect class="b" x="32" y="262" width="250" height="38"/><text class="t" x="157" y="286" text-anchor="middle">ANPR cameras ×2, entry + exit</text>
+      <rect class="b" x="32" y="316" width="250" height="38"/><text class="t" x="157" y="340" text-anchor="middle">Top / overview camera</text>
+      <rect class="b" x="32" y="400" width="250" height="38"/><text class="t" x="157" y="424" text-anchor="middle">RFID antennas ×2 · UHF</text>
+      <rect class="b" x="32" y="484" width="250" height="38"/><text class="t" x="157" y="508" text-anchor="middle">Boom barriers ×2</text>
+      <rect class="b" x="32" y="538" width="250" height="38"/><text class="t" x="157" y="562" text-anchor="middle">Traffic lights ×2 · hooter / PA</text>
+      <rect class="b" x="32" y="592" width="250" height="38"/><text class="t" x="157" y="616" text-anchor="middle">IR position beams, both ends</text>
+      <rect class="b-man" x="32" y="664" width="312" height="100"/>
+      <text class="t" x="46" y="688">Site protection</text>
+      <text class="ts" x="46" y="708">Chemical earthing pits · lightning arrestor</text>
+      <text class="ts" x="46" y="726">Surge protector on every pole cable</text>
+      <text class="ts" x="46" y="744">Lockable IP66 boxes · camera sunshades</text>
+
+      <!-- Zone B: control room -->
+      <rect class="z" x="376" y="16" width="528" height="768"/>
+      <text class="zt" x="392" y="42">Control room · site edge · works offline</text>
+
+      <rect class="b-buy" x="430" y="110" width="170" height="56"/>
+      <text class="t" x="515" y="134" text-anchor="middle">IWT-186 indicator</text>
+      <text class="ts" x="515" y="152" text-anchor="middle">sealed · Legal Metrology</text>
+      <line class="a" x1="282" y1="143" x2="428" y2="143" marker-end="url(#ah)"/><text class="al" x="356" y="137" text-anchor="middle">RS-485</text>
+      <line class="a" x1="430" y1="158" x2="286" y2="202" marker-end="url(#ah)"/><text class="al" x="380" y="196" text-anchor="middle">RS-232</text>
+
+      <rect class="b" x="430" y="268" width="170" height="64"/>
+      <text class="t" x="515" y="295" text-anchor="middle">Managed PoE switch</text>
+      <text class="ts" x="515" y="313" text-anchor="middle">VLAN 10 · devices only</text>
+      <line class="a" x1="282" y1="281" x2="428" y2="288" marker-end="url(#ah)"/>
+      <line class="a" x1="282" y1="335" x2="428" y2="318" marker-end="url(#ah)"/>
+      <text class="al" x="356" y="272" text-anchor="middle">PoE · RTSP · ONVIF</text>
+
+      <rect class="b" x="430" y="396" width="170" height="46"/>
+      <text class="t" x="515" y="416" text-anchor="middle">RFID reader</text>
+      <text class="ts" x="515" y="433" text-anchor="middle">4-port UHF</text>
+      <line class="a" x1="282" y1="419" x2="428" y2="419" marker-end="url(#ah)"/><text class="al" x="356" y="413" text-anchor="middle">coax</text>
+
+      <rect class="b" x="430" y="484" width="170" height="146"/>
+      <text class="t" x="515" y="552" text-anchor="middle">Ethernet I/O module</text>
+      <text class="ts" x="515" y="570" text-anchor="middle">relay outputs + inputs</text>
+      <line class="a" x1="428" y1="503" x2="284" y2="503" marker-end="url(#ah)"/><text class="al" x="356" y="497" text-anchor="middle">relay: open/close</text>
+      <line class="a" x1="428" y1="557" x2="284" y2="557" marker-end="url(#ah)"/><text class="al" x="356" y="551" text-anchor="middle">relay</text>
+      <line class="a" x1="282" y1="611" x2="428" y2="611" marker-end="url(#ah)"/><text class="al" x="356" y="605" text-anchor="middle">digital input</text>
+
+      <rect class="b-own" x="660" y="110" width="170" height="520"/>
+      <text class="t" x="745" y="134" text-anchor="middle">Edge server</text>
+      <text class="ts" x="745" y="150" text-anchor="middle">encrypted disk · Docker</text>
+      <rect class="bi" x="672" y="164" width="146" height="38"/><text class="t" x="745" y="188" text-anchor="middle">Device adapters</text>
+      <rect class="bi" x="672" y="212" width="146" height="38"/><text class="t" x="745" y="236" text-anchor="middle">Workflow engine</text>
+      <rect class="bi" x="672" y="260" width="146" height="38"/><text class="t" x="745" y="284" text-anchor="middle">Fraud rules</text>
+      <rect class="bi" x="672" y="308" width="146" height="38"/><text class="t" x="745" y="332" text-anchor="middle">Local PostgreSQL</text>
+      <rect class="bi" x="672" y="356" width="146" height="38"/><text class="t" x="745" y="380" text-anchor="middle">Photo cache</text>
+      <rect class="bi" x="672" y="404" width="146" height="38"/><text class="t" x="745" y="428" text-anchor="middle">Sync agent</text>
+      <rect class="bi" x="672" y="452" width="146" height="38"/><text class="t" x="745" y="476" text-anchor="middle">Local operator UI</text>
+      <text class="ts" x="745" y="530" text-anchor="middle">keeps tickets locally</text>
+      <text class="ts" x="745" y="546" text-anchor="middle">if the internet drops</text>
+
+      <line class="a" x1="600" y1="138" x2="658" y2="138" marker-end="url(#ah)"/><text class="al" x="630" y="131" text-anchor="middle">TCP</text>
+      <line class="a" x1="600" y1="300" x2="658" y2="300" marker-end="url(#ah)"/><text class="al" x="630" y="293" text-anchor="middle">LAN</text>
+      <line class="a" x1="600" y1="419" x2="658" y2="419" marker-end="url(#ah)"/><text class="al" x="630" y="412" text-anchor="middle">LLRP</text>
+      <line class="a" x1="604" y1="557" x2="658" y2="557" marker-start="url(#ah)" marker-end="url(#ah)"/><text class="al" x="630" y="550" text-anchor="middle">Modbus</text>
+
+      <rect class="b-sec" x="850" y="110" width="38" height="520"/>
+      <text class="al-s" x="869" y="370" text-anchor="middle" transform="rotate(-90 869 370)">FIREWALL · VLAN RULES · WIREGUARD VPN</text>
+      <line class="a" x1="830" y1="370" x2="848" y2="370"/>
+
+      <rect class="b" x="430" y="656" width="140" height="44"/><text class="t" x="500" y="675" text-anchor="middle">NVR · 30-day video</text><text class="ts" x="500" y="692" text-anchor="middle">records all cameras</text>
+      <rect class="b" x="590" y="656" width="140" height="44"/><text class="t" x="660" y="675" text-anchor="middle">Operator PC</text><text class="ts" x="660" y="692" text-anchor="middle">+ ticket printer</text>
+      <rect class="b" x="750" y="656" width="138" height="44"/><text class="t" x="819" y="675" text-anchor="middle">Online UPS 3 kVA</text><text class="ts" x="819" y="692" text-anchor="middle">60 min + generator</text>
+      <line class="a" x1="700" y1="656" x2="700" y2="632" marker-end="url(#ah)"/><text class="al" x="708" y="648">own login</text>
+      <text class="ts" x="392" y="738">Device VLAN has no internet route. Only the edge server may talk to devices.</text>
+      <text class="ts" x="392" y="756">Weight comes only from the indicator. Nobody can type a weight in.</text>
+
+      <!-- mTLS lane -->
+      <polyline class="a-s" points="888,370 930,370 930,80 976,80" marker-end="url(#ahs)"/>
+      <text class="al-s" x="918" y="225" text-anchor="middle" transform="rotate(-90 918 225)">HTTPS + MQTT · mutual TLS · outbound only</text>
+
+      <!-- Zone C: central -->
+      <rect class="z" x="960" y="16" width="424" height="440"/>
+      <text class="zt" x="976" y="42">Central · HO server or India cloud</text>
+      <rect class="b-own" x="980" y="64" width="180" height="46"/><text class="t" x="1070" y="84" text-anchor="middle">Reverse proxy</text><text class="ts" x="1070" y="100" text-anchor="middle">TLS 1.3 · WAF · rate limits</text>
+      <rect class="b-own" x="1184" y="64" width="180" height="46"/><text class="t" x="1274" y="84" text-anchor="middle">Identity (Keycloak)</text><text class="ts" x="1274" y="100" text-anchor="middle">SSO · MFA · roles</text>
+      <rect class="b-own" x="980" y="140" width="180" height="46"/><text class="t" x="1070" y="160" text-anchor="middle">Core API</text><text class="ts" x="1070" y="176" text-anchor="middle">tickets · masters · billing</text>
+      <rect class="b-own" x="1184" y="140" width="180" height="46"/><text class="t" x="1274" y="160" text-anchor="middle">Integration worker</text><text class="ts" x="1274" y="176" text-anchor="middle">queue · retries · logs</text>
+      <rect class="b-own" x="980" y="216" width="180" height="46"/><text class="t" x="1070" y="236" text-anchor="middle">PostgreSQL</text><text class="ts" x="1070" y="252" text-anchor="middle">encrypted · replicated</text>
+      <rect class="b-own" x="1184" y="216" width="180" height="46"/><text class="t" x="1274" y="236" text-anchor="middle">Object storage</text><text class="ts" x="1274" y="252" text-anchor="middle">truck photos · clips</text>
+      <rect class="b-own" x="980" y="292" width="180" height="46"/><text class="t" x="1070" y="312" text-anchor="middle">Audit log</text><text class="ts" x="1070" y="328" text-anchor="middle">append-only · hash-chained</text>
+      <rect class="b-own" x="1184" y="292" width="180" height="46"/><text class="t" x="1274" y="312" text-anchor="middle">Monitoring + SIEM</text><text class="ts" x="1274" y="328" text-anchor="middle">Wazuh · alerts to owner</text>
+      <rect class="b-own" x="980" y="368" width="384" height="46"/><text class="t" x="1172" y="388" text-anchor="middle">Web app + mobile PWA</text><text class="ts" x="1172" y="404" text-anchor="middle">operations · reports · owner dashboard</text>
+
+      <line class="a" x1="1160" y1="87" x2="1182" y2="87" marker-end="url(#ah)"/><text class="al" x="1172" y="127" text-anchor="middle">checks token</text>
+      <line class="a" x1="1070" y1="110" x2="1070" y2="138" marker-end="url(#ah)"/><text class="al" x="1078" y="128">routes</text>
+      <line class="a" x1="1160" y1="163" x2="1182" y2="163" marker-end="url(#ah)"/><text class="al" x="1172" y="206" text-anchor="middle">enqueues</text>
+      <line class="a" x1="1070" y1="186" x2="1070" y2="214" marker-end="url(#ah)"/><text class="al" x="1078" y="205">writes</text>
+      <line class="a" x1="1070" y1="262" x2="1070" y2="290" marker-end="url(#ah)"/><text class="al" x="1078" y="281">every change</text>
+
+      <!-- integration lane -->
+      <polyline class="a" points="1364,163 1378,163 1378,675"/>
+      <line class="a" x1="1378" y1="547" x2="1366" y2="547" marker-end="url(#ah)"/>
+      <line class="a" x1="1378" y1="611" x2="1366" y2="611" marker-end="url(#ah)"/>
+      <line class="a" x1="1378" y1="675" x2="1366" y2="675" marker-end="url(#ah)"/>
+      <text class="al" x="1392" y="330" text-anchor="middle" transform="rotate(-90 1392 330)">APIs over TLS · scoped keys</text>
+
+      <!-- backup lane -->
+      <polyline class="a" points="980,239 968,239 968,611 978,611" marker-end="url(#ah)"/>
+      <text class="al" x="951" y="560" text-anchor="middle" transform="rotate(-90 951 560)">nightly backup</text>
+
+      <!-- Zone D: outside -->
+      <rect class="z" x="960" y="484" width="424" height="300"/>
+      <text class="zt" x="976" y="510">Outside the site</text>
+      <rect class="b" x="980" y="524" width="180" height="46"/><text class="t" x="1070" y="544" text-anchor="middle">Remote users</text><text class="ts" x="1070" y="560" text-anchor="middle">owner · accounts · auditor</text>
+      <rect class="b" x="980" y="588" width="180" height="46"/><text class="t" x="1070" y="608" text-anchor="middle">Offsite backup</text><text class="ts" x="1070" y="624" text-anchor="middle">encrypted · object lock</text>
+      <rect class="b-man" x="980" y="652" width="180" height="46"/><text class="t" x="1070" y="672" text-anchor="middle">Mahakhanij e-TP</text><text class="ts" x="1070" y="688" text-anchor="middle">manual · confirm API with DMO</text>
+      <rect class="b" x="1184" y="524" width="180" height="46"/><text class="t" x="1274" y="544" text-anchor="middle">Tally Prime / SAP</text><text class="ts" x="1274" y="560" text-anchor="middle">sales + contractor bills</text>
+      <rect class="b" x="1184" y="588" width="180" height="46"/><text class="t" x="1274" y="608" text-anchor="middle">E-way bill · e-invoice</text><text class="ts" x="1274" y="624" text-anchor="middle">NIC APIs via a GSP</text>
+      <rect class="b" x="1184" y="652" width="180" height="46"/><text class="t" x="1274" y="672" text-anchor="middle">SMS · WhatsApp · email</text><text class="ts" x="1274" y="688" text-anchor="middle">tickets + alerts</text>
+      <line class="a" x1="1120" y1="522" x2="1120" y2="416" marker-end="url(#ah)"/><text class="al" x="1128" y="472">HTTPS + MFA</text>
+    </svg>
+    </div>
+    <div class="legend">
+      <span><i class="sw buy"></i>Buy certified (Legal Metrology)</span>
+      <span><i class="sw ots"></i>Off-the-shelf hardware or service</span>
+      <span><i class="sw own"></i>Software you build and own</span>
+      <span><i class="sw man"></i>Manual, or still to confirm</span>
+      <span><i class="sw sec"></i>Trust boundary crossing</span>
+    </div>
+    <figcaption>Field devices never reach the internet. Only the edge server talks to them, and only the edge server opens a connection out, through the firewall over mutual TLS. Every external system is reached by one integration worker, so each one uses one set of keys you can rotate.</figcaption>
+  </figure>
+</section>
+
+<!-- 05 -->
+<section id="flow">
+  <div class="eyebrow">05 · Operating sequence</div>
+  <h2>How a truck gets weighed</h2>
+  <p>This is the workflow engine's state machine. A weight is recorded only when every check passes. Any failure stops the truck and sends the decision to a supervisor, and the decision is logged.</p>
+  <figure class="med">
+    <div class="scroll">
+    <svg viewBox="0 0 1220 290" role="img" aria-label="Seven weighing steps in a row: arrive, identify, drive on, position, capture, rules, exit and sync. Failures at identify, position and rules drop to a supervisor hold.">
+      <defs>
+        <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker>
+        <marker id="ah2b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk-b" d="M0,0 L10,5 L0,10 z"/></marker>
+      </defs>
+      <g>
+        <rect class="b" x="16" y="30" width="152" height="100"/><text class="tn" x="28" y="50">1</text><text class="t" x="28" y="72">Arrive</text><text class="ts" x="28" y="94">IR beam trips</text><text class="ts" x="28" y="112">light red, boom down</text>
+        <rect class="b" x="188" y="30" width="152" height="100"/><text class="tn" x="200" y="50">2</text><text class="t" x="200" y="72">Identify</text><text class="ts" x="200" y="94">RFID tag + ANPR plate</text><text class="ts" x="200" y="112">must match master</text>
+        <rect class="b" x="360" y="30" width="152" height="100"/><text class="tn" x="372" y="50">3</text><text class="t" x="372" y="72">Drive on</text><text class="ts" x="372" y="94">entry boom opens</text><text class="ts" x="372" y="112">light green</text>
+        <rect class="b" x="532" y="30" width="152" height="100"/><text class="tn" x="544" y="50">4</text><text class="t" x="544" y="72">Position</text><text class="ts" x="544" y="94">both beams clear</text><text class="ts" x="544" y="112">top camera: no person</text>
+        <rect class="b-own" x="704" y="30" width="152" height="100"/><text class="tn" x="716" y="50">5</text><text class="t" x="716" y="72">Capture</text><text class="ts" x="716" y="94">stable ≥ 3 s</text><text class="ts" x="716" y="112">weight + 3 photos</text>
+        <rect class="b" x="876" y="30" width="152" height="100"/><text class="tn" x="888" y="50">6</text><text class="t" x="888" y="72">Rules</text><text class="ts" x="888" y="94">net = gross − tare</text><text class="ts" x="888" y="112">tare within limit</text>
+        <rect class="b" x="1048" y="30" width="152" height="100"/><text class="tn" x="1060" y="50">7</text><text class="t" x="1060" y="72">Exit + sync</text><text class="ts" x="1060" y="94">ticket · SMS · display</text><text class="ts" x="1060" y="112">sent to central</text>
+      </g>
+      <line class="a" x1="168" y1="80" x2="186" y2="80" marker-end="url(#ah2)"/>
+      <line class="a" x1="340" y1="80" x2="358" y2="80" marker-end="url(#ah2)"/>
+      <line class="a" x1="512" y1="80" x2="530" y2="80" marker-end="url(#ah2)"/>
+      <line class="a" x1="684" y1="80" x2="702" y2="80" marker-end="url(#ah2)"/>
+      <line class="a" x1="856" y1="80" x2="874" y2="80" marker-end="url(#ah2)"/>
+      <line class="a" x1="1028" y1="80" x2="1046" y2="80" marker-end="url(#ah2)"/>
+
+      <rect class="b-hold" x="236" y="214" width="768" height="56"/>
+      <text class="t" x="620" y="238" text-anchor="middle">Hold: boom stays down, hooter sounds, supervisor decides and gives a reason</text>
+      <text class="ts" x="620" y="257" text-anchor="middle">Every override is stored with who, when, why, and the photos. It shows on the owner's daily exception report.</text>
+      <line class="a-b" x1="264" y1="130" x2="264" y2="212" marker-end="url(#ah2b)"/><text class="al-b" x="272" y="176">no match</text>
+      <line class="a-b" x1="608" y1="130" x2="608" y2="212" marker-end="url(#ah2b)"/><text class="al-b" x="616" y="176">not fully on / person seen</text>
+      <line class="a-b" x1="952" y1="130" x2="952" y2="212" marker-end="url(#ah2b)"/><text class="al-b" x="960" y="176">tare off limit</text>
+    </svg>
+    </div>
+    <figcaption>With a stored tare (re-checked weekly), each trip needs one pass over the platform. Without it, each trip needs two passes: gross when loaded, tare when empty. Step 5 is the only moment a weight is written, and it is read from the sealed indicator.</figcaption>
+  </figure>
+</section>
+
+<!-- 06 -->
+<section id="integrations">
+  <div class="eyebrow">06 · Integrations</div>
+  <h2>Every integration, with its protocol and its security control</h2>
+  <p>Some device protocols have no login of their own: RS-232/485, Modbus and LLRP. They are kept safe by network isolation, so the firewall lets only the edge server reach them.</p>
+  <div class="tbl wide">
+    <table>
+      <thead><tr><th>#</th><th>Integration</th><th>Interface / protocol</th><th>Direction</th><th>Security control</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td class="n">01</td><td>Load cells → junction box → indicator</td><td>RS-485 full duplex, maker's protocol</td><td>into indicator</td><td>Sealed by Legal Metrology; junction box has surge protection and a tamper seal</td><td>Part of the certified system. Don't modify it.</td></tr>
+        <tr><td class="n">02</td><td>Indicator → edge server</td><td>RS-232 continuous string, or TCP over Ethernet</td><td>read-only</td><td>Device VLAN; the edge only reads, never writes a weight</td><td>Get the output string format from Essae in writing</td></tr>
+        <tr><td class="n">03</td><td>Indicator → remote LED display</td><td>Powered RS-232</td><td>one way</td><td>n/a</td><td>So the driver can see the weight</td></tr>
+        <tr><td class="n">04</td><td>ANPR cameras ×2 → edge</td><td>RTSP video, ONVIF, HTTP event push (plate text + image)</td><td>camera → edge</td><td>Unique admin passwords, cloud/P2P and UPnP off, locked firmware, VLAN 10</td><td>Buy STQC-certified models; mount 3–5 m high, 15–30° angle</td></tr>
+        <tr><td class="n">05</td><td>Top / overview camera → edge + NVR</td><td>RTSP, ONVIF snapshot</td><td>camera → edge</td><td>Same as above</td><td>Catches a person on the platform or a wheel off the edge</td></tr>
+        <tr><td class="n">06</td><td>RFID reader → edge</td><td>LLRP over TCP, EPC Gen2 UHF tags, 865–867 MHz (India band)</td><td>reader → edge</td><td>Only the edge IP may connect; tamper-evident windshield tags</td><td>Tag EPC is mapped to the vehicle in the master list</td></tr>
+        <tr><td class="n">07</td><td>Edge ↔ Ethernet I/O module</td><td>Modbus TCP</td><td>both ways</td><td>Modbus has no auth, so firewall allows the edge IP only</td><td>Outputs drive boom, lights, hooter; inputs read IR beams and boom limit switches</td></tr>
+        <tr><td class="n">08</td><td>I/O → boom barriers, lights, hooter</td><td>Dry-contact relays; contactor for 230 V loads</td><td>edge → field</td><td>Fail-safe wiring; manual key release on each boom</td><td>A power cut must never trap a truck</td></tr>
+        <tr><td class="n">09</td><td>IR beams → I/O</td><td>Digital inputs (NPN/PNP, 24 V DC)</td><td>field → edge</td><td>n/a</td><td>Or inductive loops, which cope better with dust</td></tr>
+        <tr><td class="n">10</td><td>Cameras → NVR</td><td>RTSP pull</td><td>camera → NVR</td><td>NVR not exposed to the internet; separate viewer accounts</td><td>30 days rolling</td></tr>
+        <tr><td class="n">11</td><td>Edge → printer</td><td>USB or network (ESC/P or PDF)</td><td>one way</td><td>n/a</td><td>Ticket carries a QR code that verifies against central</td></tr>
+        <tr><td class="n">12</td><td>UPS → edge</td><td>USB or SNMP (Network UPS Tools)</td><td>UPS → edge</td><td>SNMPv3 if network-managed</td><td>Shuts down cleanly on low battery</td></tr>
+        <tr><td class="n">13</td><td>Edge ↔ central</td><td>HTTPS REST + MQTT over TLS</td><td>edge initiates, outbound only</td><td>Mutual TLS with a per-site certificate; signed, idempotent sync</td><td>Store-and-forward queue for internet outages</td></tr>
+        <tr><td class="n">14</td><td>Users ↔ web app</td><td>HTTPS, OpenID Connect login</td><td>browser → central</td><td>MFA, role-based access, session timeout</td><td>Mobile PWA for the owner</td></tr>
+        <tr><td class="n">15</td><td>Central → Tally Prime</td><td>Tally XML over HTTP (port 9000) or ODBC</td><td>push vouchers</td><td>Tally port has no auth: bind to a local connector host, firewall it</td><td>Sales vouchers; contractor bills at ₹/MT rates</td></tr>
+        <tr><td class="n">16</td><td>Central → SAP (later)</td><td>OData/REST, or IDoc/RFC</td><td>push</td><td>OAuth2 technical user, least privilege</td><td>Only if you move to SAP</td></tr>
+        <tr><td class="n">17</td><td>Central → GST e-way bill / e-invoice</td><td>NIC APIs through a GSP (GST Suvidha Provider)</td><td>push, receive EWB/IRN</td><td>GSP credentials in a vault; IP allow-list</td><td>Needed for material sales that need an e-way bill</td></tr>
+        <tr><td class="n">18</td><td>Mahakhanij e-TP (Maharashtra)</td><td>Govt portal; API access not confirmed</td><td>manual / assisted</td><td>Separate portal login per authorised person</td><td>Ask the District Mining Office whether there is an API or bulk upload</td></tr>
+        <tr><td class="n">19</td><td>SMS</td><td>HTTPS API of a DLT-registered provider</td><td>push</td><td>API key in vault; templates registered on DLT</td><td>Ticket to driver or transporter</td></tr>
+        <tr><td class="n">20</td><td>WhatsApp · email</td><td>WhatsApp Business Cloud API; SMTP over TLS</td><td>push</td><td>Scoped tokens; SPF, DKIM, DMARC for email</td><td>Daily summary and exception alerts to owner</td></tr>
+        <tr><td class="n">21</td><td>Identity federation</td><td>OIDC / SAML (Keycloak ↔ Google Workspace or Microsoft 365)</td><td>login</td><td>MFA enforced at the identity provider</td><td>Optional</td></tr>
+        <tr><td class="n">22</td><td>Offsite backup</td><td>S3-compatible storage (India region); pgBackRest + restic</td><td>push</td><td>Client-side encryption; object lock for 30 days (ransomware)</td><td>Monthly restore test</td></tr>
+        <tr><td class="n">23</td><td>Monitoring</td><td>Wazuh agents, Prometheus exporters, uptime checks</td><td>agents → central</td><td>TLS; alert on logins, config changes, device offline</td><td>Alerts to owner on WhatsApp or email</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 07 -->
+<section id="hardware">
+  <div class="eyebrow">07 · Hardware</div>
+  <h2>Hardware list for the in-house build</h2>
+  <p>Price ranges are my September 2026 estimates, ex-GST, for a single weighbridge. Only the first line is Essae's quoted price.</p>
+  <div class="tbl mid">
+    <table>
+      <thead><tr><th>Item</th><th>Spec to ask for</th><th>Qty</th><th class="num">Estimate (₹)</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pill buy">buy certified</span> Weighbridge + load cells + junction box + indicator</td><td>Approved model; confirm length, capacity (≥ 80 t for loaded tippers), e = 10 kg</td><td>1</td><td class="num">14,35,000</td></tr>
+        <tr><td>ANPR cameras</td><td>4–8 MP, built-in ANPR, IR 30 m, IP67, STQC-certified</td><td>2</td><td class="num">1.2–2.4 L</td></tr>
+        <tr><td>Top / overview camera</td><td>4 MP wide angle, IP67</td><td>1</td><td class="num">0.15–0.4 L</td></tr>
+        <tr><td>UHF RFID reader + antennas</td><td>4-port, LLRP, 865–867 MHz; circular-polarised antennas</td><td>1 + 2</td><td class="num">0.8–1.5 L</td></tr>
+        <tr><td>Windshield RFID tags</td><td>Tamper-evident, break when peeled</td><td>150</td><td class="num">0.1–0.25 L</td></tr>
+        <tr><td>Boom barriers</td><td>4 m arm, 3–6 s, manual release, loop or IR safety stop</td><td>2</td><td class="num">1.4–3.0 L</td></tr>
+        <tr><td>Traffic lights, hooter, IP speaker</td><td>LED red/green, 100 dB hooter</td><td>2 + 1 + 1</td><td class="num">0.3–0.6 L</td></tr>
+        <tr><td>IR position beams</td><td>Through-beam, 20 m, IP67</td><td>2 pairs</td><td class="num">0.2–0.4 L</td></tr>
+        <tr><td>Remote LED weight display</td><td>4–5" digits, RS-232</td><td>1</td><td class="num">0.3–0.5 L</td></tr>
+        <tr><td>Ethernet I/O module + control panel</td><td>Modbus TCP, 8 DI / 8 relay, DIN rail, SPDs, IP66 box</td><td>1</td><td class="num">0.6–1.0 L</td></tr>
+        <tr><td>Poles, bolts, pole boxes</td><td>Galvanised, lockable IP66</td><td>set</td><td class="num">0.5–1.0 L</td></tr>
+        <tr><td>Cabling</td><td>Outdoor CAT6, fibre + media converters over 90 m, HDPE conduit</td><td>set</td><td class="num">0.5–1.0 L</td></tr>
+        <tr class="total"><td colspan="3">Automation hardware subtotal</td><td class="num">≈ 6–12 L</td></tr>
+        <tr><td>Edge server</td><td>Fanless industrial, i5/i7, 32 GB, 2 × 1 TB SSD mirrored</td><td>1</td><td class="num">0.9–1.6 L</td></tr>
+        <tr><td>NVR</td><td>8-channel, 2 × 4 TB surveillance disks</td><td>1</td><td class="num">0.4–0.7 L</td></tr>
+        <tr><td>Managed PoE switch</td><td>Industrial, VLAN, 8–16 ports</td><td>1</td><td class="num">0.3–0.8 L</td></tr>
+        <tr><td>Firewall</td><td>OPNsense appliance or an entry-level Sophos/Fortinet with licence</td><td>1</td><td class="num">0.4–1.2 L</td></tr>
+        <tr><td>Online UPS</td><td>3 kVA, 60 min backup</td><td>1</td><td class="num">0.6–1.0 L</td></tr>
+        <tr><td>Operator PC + printer</td><td>i5, 16 GB; thermal or dot-matrix printer</td><td>1</td><td class="num">0.6–0.9 L</td></tr>
+        <tr><td>Internet</td><td>Broadband + 4G/5G backup router</td><td>1</td><td class="num">0.1–0.2 L</td></tr>
+        <tr class="total"><td colspan="3">IT and security subtotal</td><td class="num">≈ 3.3–6.4 L</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 08 -->
+<section id="software">
+  <div class="eyebrow">08 · Software</div>
+  <h2>Software stack</h2>
+  <p>Mainstream open-source parts, so you are not tied to one vendor and any competent developer can maintain it. None of them charge licence fees.</p>
+  <div class="tbl mid">
+    <table>
+      <thead><tr><th>Layer</th><th>Choice</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>Edge OS</td><td>Ubuntu Server 24.04 LTS, LUKS full-disk encryption, Docker</td><td>Long support life; a stolen disk can't be read</td></tr>
+        <tr><td>Device adapters</td><td>Python 3.12: pyserial, pymodbus, an LLRP client, ONVIF + ffmpeg for snapshots</td><td>Good libraries for every device protocol involved</td></tr>
+        <tr><td>Workflow engine</td><td>Explicit state machine (steps 1–7 above), config-driven rules</td><td>Every state change is logged and testable</td></tr>
+        <tr><td>ANPR</td><td>The camera's built-in ANPR first; a server-side YOLO + OCR fallback later if needed</td><td>RFID is the primary ID; the plate cross-checks it</td></tr>
+        <tr><td>Local + central database</td><td>PostgreSQL 16</td><td>Reliable, handles audit triggers and replication</td></tr>
+        <tr><td>Messaging</td><td>MQTT (Mosquitto) at the edge; Redis queue centrally</td><td>Survives internet drops; retries integrations</td></tr>
+        <tr><td>Central API</td><td>Python FastAPI, OpenAPI documented</td><td>Same language as the edge; quick to build</td></tr>
+        <tr><td>Web + mobile</td><td>React PWA (installable on phones)</td><td>One codebase for control room, office and owner</td></tr>
+        <tr><td>Identity</td><td>Keycloak</td><td>MFA, roles, SSO and lockout built in</td></tr>
+        <tr><td>Photos</td><td>MinIO or cloud object storage, India region</td><td>Cheap, encrypted, lifecycle rules</td></tr>
+        <tr><td>Ops</td><td>Docker Compose → Ansible, GitHub Actions CI, Prometheus + Grafana, Wazuh, pgBackRest + restic</td><td>Repeatable installs, alerts, tested backups</td></tr>
+        <tr><td>Hosting</td><td>A head-office server, or cloud in Mumbai / Hyderabad / Pune regions</td><td>Cloud ≈ ₹5–15k/month; data stays in India</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 09 -->
+<section id="security">
+  <div class="eyebrow">09 · Security</div>
+  <h2>Security: logins, data, integrations and fraud</h2>
+  <p>A weighbridge is a cash register measured in tonnes. The main risks are an insider changing weights, a vehicle cheating the scale, and ransomware wiping the records. The controls below are ordered by those risks.</p>
+
+  <figure class="med">
+    <div class="scroll">
+    <svg viewBox="0 0 1220 330" role="img" aria-label="Network zones: the device VLAN talks only to the server VLAN; the server VLAN connects outbound to the internet on port 443 with mutual TLS; inbound from the internet is blocked; the office VLAN reaches the local UI on port 443 only; devices have no internet route.">
+      <defs>
+        <marker id="ah3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker>
+        <marker id="ah3s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="mk-s" d="M0,0 L10,5 L0,10 z"/></marker>
+        <marker id="ah3b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="mk-b" d="M0,0 L10,5 L0,10 z"/></marker>
+      </defs>
+      <rect class="b" x="16" y="30" width="300" height="150"/>
+      <text class="zt" x="32" y="56">VLAN 10 · Devices</text>
+      <text class="t" x="32" y="86">Cameras · RFID reader</text>
+      <text class="t" x="32" y="108">I/O module · indicator</text>
+      <text class="ts" x="32" y="134">Default passwords changed</text>
+      <text class="ts" x="32" y="152">Unused switch ports disabled</text>
+
+      <rect class="b-own" x="470" y="30" width="300" height="150"/>
+      <text class="zt" x="486" y="56">VLAN 20 · Servers</text>
+      <text class="t" x="486" y="86">Edge server · NVR</text>
+      <text class="ts" x="486" y="112">Full-disk encrypted</text>
+      <text class="ts" x="486" y="130">Only SSH from the admin VPN, key-based</text>
+
+      <rect class="b" x="924" y="30" width="280" height="150"/>
+      <text class="zt" x="940" y="56">Internet</text>
+      <text class="t" x="940" y="86">Central system</text>
+      <text class="t" x="940" y="108">GSP · SMS · backup</text>
+      <text class="ts" x="940" y="134">Admins reach the site only</text>
+      <text class="ts" x="940" y="152">via WireGuard VPN + MFA</text>
+
+      <rect class="b" x="470" y="244" width="300" height="70"/>
+      <text class="zt" x="486" y="268">VLAN 30 · Office</text>
+      <text class="t" x="486" y="294">Operator PC · printer</text>
+
+      <line class="a" x1="320" y1="96" x2="466" y2="96" marker-start="url(#ah3)" marker-end="url(#ah3)"/>
+      <text class="al" x="393" y="88" text-anchor="middle">edge only</text>
+      <text class="al" x="393" y="116" text-anchor="middle">Modbus·LLRP·RTSP</text>
+
+      <line class="a-s" x1="772" y1="96" x2="920" y2="96" marker-end="url(#ah3s)"/>
+      <text class="al-s" x="846" y="88" text-anchor="middle">443 out · mTLS</text>
+      <line class="a-b" x1="920" y1="150" x2="774" y2="150" marker-end="url(#ah3b)"/>
+      <line class="xk" x1="838" y1="142" x2="854" y2="158"/><line class="xk" x1="854" y1="142" x2="838" y2="158"/>
+      <text class="al-b" x="846" y="136" text-anchor="middle">inbound: blocked</text>
+
+      <line class="a" x1="620" y1="242" x2="620" y2="184" marker-end="url(#ah3)"/>
+      <text class="al" x="630" y="218">HTTPS 443 to local UI</text>
+
+      <line class="a-b" x1="166" y1="182" x2="166" y2="250"/>
+      <line class="xk" x1="158" y1="250" x2="174" y2="266"/><line class="xk" x1="174" y1="250" x2="158" y2="266"/>
+      <text class="al-b" x="186" y="262">no route to internet</text>
+    </svg>
+    </div>
+    <figcaption>Every arrow passes the site firewall. Anything not drawn is denied by default. The edge server is the only machine that talks to devices and the only one allowed to connect out.</figcaption>
+  </figure>
+
+  <div class="cards">
+    <div class="card">
+      <h3>User login and access</h3>
+      <ul>
+        <li><strong>One person, one account.</strong> No shared "operator" login. Accounts live in Keycloak.</li>
+        <li><strong>MFA</strong> (authenticator app) for the owner, admins, accounts staff, supervisors, and every remote login. On-site operators use a password plus an MFA code, or an RFID staff card plus a PIN.</li>
+        <li><strong>Passwords:</strong> at least 12 characters, checked against known-breached lists, stored as salted hashes. Lock the account for 15 minutes after 5 failed attempts.</li>
+        <li><strong>Sessions:</strong> log out after 15 minutes idle on office screens. Operator sessions end with the shift.</li>
+        <li><strong>Roles:</strong> Operator (weighs and prints, cannot edit). Supervisor (approves holds and corrections, and must give a reason). Accounts (billing and exports, cannot edit tickets). Owner/Admin (users, rates, masters). Auditor (read-only, including the audit log). Transporter portal (optional, sees only its own trucks).</li>
+        <li><strong>Leavers are disabled the same day.</strong> Review everyone's access every quarter.</li>
+        <li><strong>No AnyDesk or TeamViewer left running</strong> on weighbridge PCs. That is a common way in for attackers. Remote support goes through the VPN only.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Data security</h3>
+      <ul>
+        <li><strong>In transit:</strong> TLS 1.2 or higher (1.3 preferred) on every link, internal ones included. The edge and central system use mutual TLS with a certificate per site.</li>
+        <li><strong>At rest:</strong> full-disk encryption on the edge and servers. Databases on encrypted volumes. Photos encrypted in storage.</li>
+        <li><strong>Tickets can't be changed once captured.</strong> A correction creates a new version with the reason and the approver. Each record and its photo hashes are chained with SHA-256, and the day's final hash is sent to the owner, so any later edit is detectable.</li>
+        <li><strong>Backups (3-2-1):</strong> continuous database log shipping plus a nightly full backup, one copy on site and one encrypted offsite with a 30-day object lock so ransomware can't delete it. Test a restore every month.</li>
+        <li><strong>Retention:</strong> keep tickets and bills for at least 72 months (the GST record rule), photos for 1–2 years, video for 30 days.</li>
+        <li><strong>Personal data (DPDP Act 2023):</strong> drivers' names, mobile numbers and faces on camera are personal data. Put a notice at the gate, use the data only for weighing and billing, and delete it when the retention period ends.</li>
+        <li><strong>Secrets</strong> are kept in a vault, never in code or on sticky notes.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Integration security</h3>
+      <ul>
+        <li><strong>Devices:</strong> give each one a unique admin password, turn off cloud/P2P, UPnP and telnet, update firmware every quarter, and disable unused switch ports.</li>
+        <li><strong>Protocols without logins</strong> (Modbus, LLRP, RS-232) are protected by isolation. The firewall only lets the edge server's IP reach them.</li>
+        <li><strong>APIs:</strong> each integration gets its own key or OAuth2 client with the minimum scope, rotated every 90 days. Webhooks are signed (HMAC with a timestamp). Idempotency keys stop duplicate bills. Rate limits and input validation follow OWASP ASVS level 2 as the checklist.</li>
+        <li><strong>Tally</strong> exposes port 9000 with no authentication, so allow only the connector host to reach it.</li>
+        <li><strong>GSP, SMS and WhatsApp credentials</strong> go in the vault, with IP allow-listing where the provider supports it.</li>
+        <li><strong>Logging:</strong> record every API call, login and admin action centrally, and keep it for 180 days. The CERT-In 2022 directions require 180-day log retention and reporting a cyber incident within 6 hours.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Weighing fraud controls</h3>
+      <ul>
+        <li><strong>The weight comes only from the sealed indicator.</strong> Manual weight entry is switched off in the software.</li>
+        <li><strong>Capture only when all of these hold:</strong> the reading is stable for 3 seconds or more, both IR beams are clear (the whole truck is on the platform), and the top camera shows nobody standing on it.</li>
+        <li><strong>RFID and plate must match.</strong> Tags break when peeled off, so they can't be moved to another truck.</li>
+        <li><strong>Tare checks:</strong> a fresh tare that differs from the vehicle's history by more than a set % triggers a hold. Force a re-tare every week.</li>
+        <li><strong>Same truck twice within X minutes, or an odd hour</strong> gets flagged.</li>
+        <li><strong>Remote-control or jammer cheating:</strong> a sealed junction box, a camera covering the pit and the box, a daily zero check, and a monthly test-weight check, all logged.</li>
+        <li><strong>Owner's daily exception report</strong> on WhatsApp or email.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Physical and site</h3>
+      <ul>
+        <li>Lockable IP66 boxes on every pole, and surge protectors on every cable that runs out to the yard.</li>
+        <li>Air-conditioned control room with controlled entry and its own camera. The server and switch go in a locked rack.</li>
+        <li>An online UPS covering the edge server, network and indicator, plus a generator changeover.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Compliance and testing</h3>
+      <ul>
+        <li><strong>Legal Metrology Act 2009:</strong> stamping at installation and periodic re-verification. Ask the Controller's office to confirm how the ticket software must show the certified weight.</li>
+        <li><strong>DPDP Act 2023, CERT-In directions 2022, GST record-keeping.</strong></li>
+        <li><strong>CCTV:</strong> buy cameras that carry the STQC certification now mandatory in India.</li>
+        <li><strong>Security test:</strong> a CERT-In empanelled auditor tests the system before go-live and then every year.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 10 -->
+<section id="performance">
+  <div class="eyebrow">10 · Performance</div>
+  <h2>How the system will perform</h2>
+  <div class="kpis">
+    <div class="kpi"><b>60–90 s</b><span>per automated pass, against 3–5 min manual</span></div>
+    <div class="kpi"><b>~40 / h</b><span>trips per hour at peak with a stored tare (one pass each); ~20–25 with two passes</span></div>
+    <div class="kpi"><b>e = 10 kg</b><span>typical scale interval, Class III (confirm on the stamping certificate)</span></div>
+    <div class="kpi"><b>&lt; 1 s</b><span>from a stable weight to the decision; &lt; 5 s to reach central when online</span></div>
+  </div>
+  <div class="tbl mid">
+    <table>
+      <thead><tr><th>Area</th><th>Expected</th><th>What drives it</th></tr></thead>
+      <tbody>
+        <tr><td>Pass breakdown</td><td>Boom 3–6 s · drive on 15–25 s · settle 3–5 s · capture + print 2–3 s · drive off 15–25 s</td><td>Mostly driver behaviour. Clear lights and signage help.</td></tr>
+        <tr><td>Truck identification</td><td>RFID &gt; 99% with a correctly placed tag. ANPR 85–95% on dusty mine plates.</td><td>That's why RFID is the primary ID, and ANPR is a cross-check and photo evidence.</td></tr>
+        <tr><td>Weight stream</td><td>5–10 readings a second from the indicator; load cells convert at 200 Hz</td><td>Stability window and filter settings</td></tr>
+        <tr><td>Storage</td><td>~1.5 MB of photos per pass. At 300 passes a day that's ≈ 0.5 GB/day, ≈ 15 GB/month. NVR: 4 cameras × 30 days ≈ 3–5 TB.</td><td>Resolution, H.265, motion-based recording</td></tr>
+        <tr><td>Uptime</td><td>The site keeps weighing through internet outages and syncs later. 60-minute UPS plus generator.</td><td>Edge-first design</td></tr>
+        <tr><td>Fallback</td><td>If a camera or reader fails, supervisor mode: the weight still comes from the indicator, the truck is identified by hand, and the ticket is flagged</td><td>No complete stoppage</td></tr>
+        <tr><td>Environment</td><td>45 °C+ summers, dust, monsoon lightning</td><td>AC control room, camera sunshades, weekly lens cleaning, SPDs and earthing</td></tr>
+        <tr><td>Scale-up</td><td>A second weighbridge or site adds one edge server. The central system is shared.</td><td>Multi-site design from day 1</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 11 -->
+<section id="steps">
+  <div class="eyebrow">11 · Implementation</div>
+  <h2>Step-by-step rollout</h2>
+  <div class="gantt" role="img" aria-label="18-week timeline. Software build runs weeks 1 to 10 in parallel with civil works in weeks 2 to 8; the weighbridge is installed in weeks 9 to 10 and stamped in weeks 10 to 11; site integration in weeks 11 to 13, parallel run 13 to 15, go-live in week 15, support until week 18.">
+    <div class="g">
+      <div class="lbl wk" style="text-align:left">Workstream · week</div>
+      <div class="wk">1</div><div class="wk">2</div><div class="wk">3</div><div class="wk">4</div><div class="wk">5</div><div class="wk">6</div><div class="wk">7</div><div class="wk">8</div><div class="wk">9</div><div class="wk">10</div><div class="wk">11</div><div class="wk">12</div><div class="wk">13</div><div class="wk">14</div><div class="wk">15</div><div class="wk">16</div><div class="wk">17</div><div class="wk">18</div>
+
+      <div class="lbl">Decide, survey, place order</div><div class="bar civ" style="grid-column:2 / 4"></div><div style="grid-column:4 / 20"></div>
+      <div class="lbl">Weighbridge fabrication + dispatch</div><div style="grid-column:2 / 4"></div><div class="bar buy" style="grid-column:4 / 8"></div><div style="grid-column:8 / 20"></div>
+      <div class="lbl">Civil, control room, earthing</div><div style="grid-column:2 / 3"></div><div class="bar civ" style="grid-column:3 / 10"></div><div style="grid-column:10 / 20"></div>
+      <div class="lbl">Weighbridge install + calibrate</div><div style="grid-column:2 / 10"></div><div class="bar buy" style="grid-column:10 / 12"></div><div style="grid-column:12 / 20"></div>
+      <div class="lbl">Legal Metrology stamping</div><div style="grid-column:2 / 11"></div><div class="bar mile" style="grid-column:11 / 13"></div><div style="grid-column:13 / 20"></div>
+      <div class="lbl">Poles, cameras, RFID, booms</div><div style="grid-column:2 / 9"></div><div class="bar civ" style="grid-column:9 / 13"></div><div style="grid-column:13 / 20"></div>
+      <div class="lbl">Network, firewall, server</div><div style="grid-column:2 / 10"></div><div class="bar civ" style="grid-column:10 / 13"></div><div style="grid-column:13 / 20"></div>
+      <div class="lbl">Software build with simulators</div><div class="bar own" style="grid-column:2 / 12"></div><div style="grid-column:12 / 20"></div>
+      <div class="lbl">Site integration + acceptance</div><div style="grid-column:2 / 12"></div><div class="bar own" style="grid-column:12 / 15"></div><div style="grid-column:15 / 20"></div>
+      <div class="lbl">Parallel run (manual + auto)</div><div style="grid-column:2 / 14"></div><div class="bar own" style="grid-column:14 / 17"></div><div style="grid-column:17 / 20"></div>
+      <div class="lbl">Security test, go-live, support</div><div style="grid-column:2 / 16"></div><div class="bar mile" style="grid-column:16 / 20"></div>
+    </div>
+  </div>
+  <div class="legend">
+    <span><i class="sw" style="background:var(--muted);border-color:var(--muted)"></i>Site / civil (your contractors)</span>
+    <span><i class="sw buy"></i>Weighbridge maker</span>
+    <span><i class="sw own"></i>Software (me + your engineer)</span>
+    <span><i class="sw" style="background:var(--bad);border-color:var(--bad)"></i>Approval gate</span>
+  </div>
+
+  <ol class="steps">
+    <li><div><h3>Settle the requirement <span class="when">week 1</span></h3>
+      <ul><li>Truck types and maximum gross weight → platform length and capacity (likely 16–18 m, 80–100 t for loaded tippers).</li>
+      <li>Trips per day at peak, single or two-pass weighing, materials, parties (e.g. the Four Square contract at ₹93/MT).</li>
+      <li>Which reports, and which integrations are needed on day 1 (Tally, e-way bill, SMS) and which can wait.</li></ul></div></li>
+    <li><div><h3>Site survey and layout <span class="when">week 1–2</span></h3>
+      <ul><li>Level ground, straight approach of at least one truck length on both sides, drainage, and where the control room goes (within 90 m of the poles, otherwise fibre).</li>
+      <li>Mark the pole positions for the ANPR cameras (3–5 m high), RFID antennas and booms. Plan conduits before the concrete is poured.</li></ul></div></li>
+    <li><div><h3>Place the order on open terms <span class="when">week 2</span></h3>
+      <ul><li>Get quotes from Essae and two other approved makers. Get the indicator's output format, admin credentials for every device, and the foundation drawings in writing.</li>
+      <li>Pay 30% advance. Dispatch is 4 weeks later.</li></ul></div></li>
+    <li><div><h3>Civil works and the control room <span class="when">weeks 2–8</span></h3>
+      <ul><li>Foundation and ramps to the maker's drawing. Allow 21–28 days for concrete to cure before installation.</li>
+      <li>Control room with AC, a locked rack, and earthing: chemical pits, separate for the weighbridge and the electronics, resistance measured and recorded.</li>
+      <li>HDPE conduits to every pole, pull cords left in.</li></ul></div></li>
+    <li><div><h3>Software build, in parallel <span class="when">weeks 1–10</span></h3>
+      <ul><li>I write the edge service, the central system, the web app and the integrations, plus <strong>simulators for every device</strong>, so the whole flow is tested before any hardware arrives.</li>
+      <li>You review a working demo every week.</li></ul></div></li>
+    <li><div><h3>Install and calibrate the weighbridge <span class="when">weeks 9–10</span></h3>
+      <ul><li>The maker's engineer installs it. You supply the crane, labour, welder and jacks. Budget beyond the 4 free days at ₹5,000/day.</li></ul></div></li>
+    <li><div><h3>Legal Metrology stamping <span class="when">weeks 10–11</span></h3>
+      <ul><li>Book the inspector and arrange test weights. The certificate states the maximum capacity and scale interval, and the ticket must print them.</li></ul></div></li>
+    <li><div><h3>Install automation hardware and the network <span class="when">weeks 8–12</span></h3>
+      <ul><li>Poles, cameras, RFID antennas and reader, booms, lights, IR beams, I/O panel and surge protectors.</li>
+      <li>Switch with VLANs, firewall rules as in the zone diagram, edge server with encrypted disks, NVR, UPS. Change every default password.</li></ul></div></li>
+    <li><div><h3>Site integration and acceptance tests <span class="when">weeks 11–13</span></h3>
+      <ul><li>Connect each real device in place of its simulator. Test with a known truck and test weights.</li>
+      <li>Fault drills: pull the internet cable, pull a camera, cut the mains, try a wrong tag, stand someone on the platform, park one wheel off it.</li></ul></div></li>
+    <li><div><h3>Enrol vehicles and users <span class="when">weeks 12–13</span></h3>
+      <ul><li>Fix tags to windshields, record each vehicle's plate and tare, create user accounts, and enrol everyone in MFA.</li></ul></div></li>
+    <li><div><h3>Parallel run <span class="when">weeks 13–15</span></h3>
+      <ul><li>Two weeks of the manual register alongside the automatic system. Reconcile every day and tune the tare limits and stability window.</li></ul></div></li>
+    <li><div><h3>Security test and go-live <span class="when">weeks 15–18</span></h3>
+      <ul><li>Security audit, fix findings, go live. Train operators and supervisors on one-page SOPs, then three weeks of close support.</li></ul></div></li>
+  </ol>
+</section>
+
+<!-- 12 -->
+<section id="effort">
+  <div class="eyebrow">12 · Effort</div>
+  <h2>What it takes me to build it, and what needs people on site</h2>
+  <div class="cards">
+    <div class="card">
+      <h3>What I build</h3>
+      <ul>
+        <li>Edge service: adapters for the indicator, cameras, RFID and I/O, the workflow engine, fraud rules, local database, sync agent, local operator screen.</li>
+        <li>Device simulators, so everything is tested before the hardware arrives.</li>
+        <li>Central system: API, database schema, audit hash chain, Keycloak setup with roles and MFA, web app and owner PWA, reports, billing at contract rates.</li>
+        <li>Integrations: Tally, e-way bill via a GSP, SMS, WhatsApp, email.</li>
+        <li>Deployment scripts, backup and restore scripts, monitoring, firewall rule set, security checklist, SOPs and training notes.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>What needs people</h3>
+      <ul>
+        <li><strong>One technically capable engineer</strong> (in-house or contract) for 4–5 months. They run my code on site, connect the devices, send me logs, and review each release.</li>
+        <li>Civil contractor, electrician, and a network/CCTV installer.</li>
+        <li>The maker's engineer for installation, and the Legal Metrology inspector for stamping.</li>
+        <li>Things I need from vendors: the indicator's output format, the camera ANPR event format, and the RFID reader model.</li>
+        <li>I can't reach your site network or touch hardware. On-site work always goes through your engineer.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="tbl mid">
+    <table>
+      <thead><tr><th>Software module</th><th class="num">Typical dev team</th><th class="num">With me writing the code</th></tr></thead>
+      <tbody>
+        <tr><td>Device adapters + simulators</td><td class="num">6 person-weeks</td><td class="num">1–1.5 weeks</td></tr>
+        <tr><td>Workflow engine + weighing and fraud rules</td><td class="num">4</td><td class="num">1</td></tr>
+        <tr><td>Tickets, masters, printing</td><td class="num">4</td><td class="num">1</td></tr>
+        <tr><td>Web app, roles, reports, owner dashboard</td><td class="num">8</td><td class="num">1.5–2</td></tr>
+        <tr><td>Login, MFA, audit chain, security hardening</td><td class="num">4</td><td class="num">1</td></tr>
+        <tr><td>Sync, central deployment, backups, monitoring</td><td class="num">4</td><td class="num">1</td></tr>
+        <tr><td>Tally, e-way bill, SMS and WhatsApp integrations</td><td class="num">5</td><td class="num">1–1.5</td></tr>
+        <tr><td>Site integration and testing with real devices</td><td class="num">6</td><td class="num">3–4 (limited by site work)</td></tr>
+        <tr class="total"><td>Total</td><td class="num">≈ 41 person-weeks (~10 months)</td><td class="num">≈ 10–13 weeks + 1 engineer</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="tbl mid">
+    <table>
+      <thead><tr><th>Upfront cost, ex-GST (estimate)</th><th class="num">A · Essae full</th><th class="num">C · Essae hardware + own software</th><th class="num">B · build most</th></tr></thead>
+      <tbody>
+        <tr><td>Weighbridge (quoted)</td><td class="num">14.35 L</td><td class="num">14.35 L</td><td class="num">14.35 L</td></tr>
+        <tr><td>Automation hardware</td><td class="num">6.90 L (quoted)</td><td class="num">6.90 L (quoted)</td><td class="num">6–12 L</td></tr>
+        <tr><td>Civil, control room, electrical, stamping, labour</td><td class="num">9–17 L</td><td class="num">9–17 L</td><td class="num">9–17 L</td></tr>
+        <tr><td>PC, printer, UPS / server, NVR, firewall, network</td><td class="num">1.8–3.2 L</td><td class="num">3.3–6.4 L</td><td class="num">3.3–6.4 L</td></tr>
+        <tr><td>Software people (engineer 4–5 months) + security test</td><td class="num">n/a</td><td class="num">3.75–7.5 L</td><td class="num">3.75–7.5 L</td></tr>
+        <tr class="total"><td>Total</td><td class="num">≈ 32–41 L</td><td class="num">≈ 37–52 L</td><td class="num">≈ 36–57 L</td></tr>
+        <tr><td>Running cost / year</td><td class="num">AMC after year 1 + paid changes</td><td class="num">Hosting ₹0.6–1.8 L + upkeep</td><td class="num">Same as C + more spares</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="muted">Add 18% GST to every line. Civil costs depend heavily on soil, platform length and ramp design. Get a local contractor's quote on the maker's drawing.</p>
+</section>
+
+<!-- 13 -->
+<section id="ask">
+  <div class="eyebrow">13 · Before 2 October</div>
+  <h2>Questions to put to Essae before ordering</h2>
+  <ol class="steps">
+    <li><div><h3>Platform size, capacity, number of load cells and scale interval</h3><p>"Oxygen Series 1600P" isn't explained, and the load cells are quoted as 18.2 t or 34 t without saying which.</p></div></li>
+    <li><div><h3>Indicator output</h3><p>Will they share the IWT-186 data string format and enable TCP output? The brochure lists a 10,000-count analog load-cell module (5 V excitation) while the quote is for digital cells. How do the two connect?</p></div></li>
+    <li><div><h3>Open access to the AWS hardware</h3><p>Admin credentials for the cameras, RFID reader and switch. The reader's model and LLRP support. Can the hardware be bought without their software, and at what price?</p></div></li>
+    <li><div><h3>Database and export</h3><p>MySQL or MSSQL? Read access to the tables, and the price of the "optional" JSON web report and SAP/ERP connector.</p></div></li>
+    <li><div><h3>Scope conflicts</h3><p>One boom barrier or two? Who supplies the printer and UPS: page 16 says Essae, page 17 says you.</p></div></li>
+    <li><div><h3>Service</h3><p>AMC price after year 1, response time in Chandrapur, spares held locally, and how their remote support connects to your system (it must go through your VPN).</p></div></li>
+    <li><div><h3>Operating temperature and security</h3><p>Do they require an air-conditioned control room, given the 40 °C limit? Does their software support MFA, per-user audit trails and records that can't be edited?</p></div></li>
+  </ol>
+</section>
+
+</main>
+</div>
+
+<footer>Prepared 24 September 2026 from Essae Digitronics' techno-commercial offer, ref EDPL/TSD/KRJ/R1 (18 pages). Essae's quoted prices are as stated. All other costs, timings and performance figures are planning estimates to confirm with local vendors. This is an engineering plan, not legal advice. Confirm Legal Metrology, GST and mining-permit requirements with the relevant offices.</footer>
+</div>
