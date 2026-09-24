@@ -1,0 +1,1194 @@
+<title>Weighbridge Software Plan</title>
+<style>
+:root{
+  --bg:#F3F5F6; --surface:#FFFFFF; --surface-2:#E8ECEE; --ink:#172026; --muted:#55626B;
+  --line:#D3DADE; --line-strong:#8E9BA4;
+  --amber:#D99A00; --amber-ink:#8A5B00; --amber-soft:#FFF3D1;
+  --blue:#1E5B8C; --blue-soft:#E1ECF5;
+  --good:#1F7A4D; --warn:#9A5800; --bad:#B3261E;
+  --display:"Barlow Semi Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#11171B; --surface:#182127; --surface-2:#1F2A31; --ink:#E4EAEE; --muted:#9AA8B1;
+    --line:#2A363E; --line-strong:#55656F;
+    --amber:#F2B632; --amber-ink:#F2C45A; --amber-soft:#3A2E10;
+    --blue:#7DB3E0; --blue-soft:#18324A;
+    --good:#5FC28E; --warn:#F0A650; --bad:#FF8A80;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#11171B; --surface:#182127; --surface-2:#1F2A31; --ink:#E4EAEE; --muted:#9AA8B1;
+  --line:#2A363E; --line-strong:#55656F;
+  --amber:#F2B632; --amber-ink:#F2C45A; --amber-soft:#3A2E10;
+  --blue:#7DB3E0; --blue-soft:#18324A;
+  --good:#5FC28E; --warn:#F0A650; --bad:#FF8A80;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;padding-inline:16px;padding-block:0 64px}
+.wrap{max-width:1180px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);line-height:1.12;text-wrap:balance;margin:0}
+h1{font-size:clamp(2rem,4.6vw,3.1rem);font-weight:700;letter-spacing:-.01em}
+h2{font-size:clamp(1.55rem,3vw,2.05rem);font-weight:700}
+h3{font-size:1.25rem;font-weight:600;margin-top:.4rem}
+p,li{max-width:72ch}
+p{margin:0}
+a{color:var(--blue)}
+code,.mono{font-family:var(--mono);font-size:.86em}
+.muted{color:var(--muted)}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+
+/* header */
+header.top{display:grid;grid-template-columns:1fr auto;gap:28px;align-items:end;padding-block:40px 28px;border-bottom:3px solid var(--ink)}
+header.top .lede{margin-top:14px;font-size:1.08rem;color:var(--muted);max-width:64ch}
+.stub{font-family:var(--mono);font-size:.8rem;background:var(--surface);border:1px dashed var(--line-strong);padding:14px 16px;display:grid;grid-template-columns:auto auto;gap:4px 16px;min-width:0}
+.stub dt{color:var(--muted)} .stub dd{margin:0;text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.stub .hot{color:var(--bad)}
+.hazard{height:8px;background:repeating-linear-gradient(-45deg,var(--amber) 0 12px,var(--ink) 12px 24px);margin-top:0}
+@media (max-width:760px){header.top{grid-template-columns:1fr}.stub{grid-template-columns:1fr auto}}
+
+/* layout */
+.layout{display:grid;grid-template-columns:200px minmax(0,1fr);gap:40px;margin-top:32px}
+nav.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);align-self:start;font-size:.9rem}
+nav.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:2px;counter-reset:s}
+nav.toc li{counter-increment:s}
+nav.toc a{display:block;padding:5px 8px;border-left:2px solid var(--line);color:var(--muted);text-decoration:none}
+nav.toc a::before{content:counter(s,decimal-leading-zero) "  ";font-family:var(--mono);font-size:.75rem}
+nav.toc a:hover,nav.toc a:focus-visible{color:var(--ink);border-left-color:var(--amber);outline:none}
+@media (max-width:980px){
+  .layout{grid-template-columns:1fr;gap:20px}
+  nav.toc{position:static}
+  nav.toc ol{display:flex;flex-wrap:wrap;gap:6px}
+  nav.toc a{border:1px solid var(--line);border-radius:3px;padding:3px 8px;background:var(--surface)}
+}
+main{display:grid;gap:56px;min-width:0}
+section{display:grid;gap:16px;min-width:0;scroll-margin-top:16px}
+section > .eyebrow{margin-bottom:-8px}
+
+/* verdict */
+.verdict{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--amber);padding:22px 24px;display:grid;gap:12px}
+.verdict ul{margin:0;padding-left:1.2em;display:grid;gap:6px}
+.callout{background:var(--amber-soft);border-left:4px solid var(--amber);padding:12px 16px}
+.callout.blue{background:var(--blue-soft);border-left-color:var(--blue)}
+
+/* tables */
+.tbl{min-width:0;overflow-x:auto;border:1px solid var(--line);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{text-align:left;vertical-align:top;padding:9px 12px;border-bottom:1px solid var(--line)}
+th{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--surface-2);font-weight:600;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.n{font-family:var(--mono);color:var(--muted);font-size:.8rem;white-space:nowrap}
+tr.total td{font-weight:700;background:var(--surface-2)}
+.tbl.wide table{min-width:980px}
+.tbl.mid table{min-width:720px}
+.pill{display:inline-block;font-family:var(--mono);font-size:.7rem;padding:1px 7px;border-radius:2px;white-space:nowrap;border:1px solid}
+.pill.buy{color:var(--blue);border-color:var(--blue);background:var(--blue-soft)}
+.pill.own{color:var(--amber-ink);border-color:var(--amber);background:var(--amber-soft)}
+.pill.ots{color:var(--muted);border-color:var(--line-strong)}
+.pill.chk{color:var(--bad);border-color:var(--bad)}
+
+/* options */
+.opts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.opt{background:var(--surface);border:1px solid var(--line);padding:18px;display:grid;gap:10px;align-content:start}
+.opt.pick{border:2px solid var(--amber)}
+.opt .tag{font-family:var(--mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.opt.pick .tag{color:var(--amber-ink)}
+.opt h3{margin:0}
+.opt .cost{font-family:var(--mono);font-weight:600;font-size:1.05rem;font-variant-numeric:tabular-nums}
+.opt ul{margin:0;padding-left:1.1em;display:grid;gap:4px;font-size:.93rem}
+@media (max-width:860px){.opts{grid-template-columns:1fr}}
+
+/* figures */
+figure{margin:0;min-width:0;background:var(--surface);border:1px solid var(--line);padding:16px}
+figure .scroll{overflow-x:auto}
+figure svg{display:block;width:100%;height:auto;font-family:var(--body)}
+figure.big svg{min-width:1040px}
+figure.med svg{min-width:820px}
+figcaption{margin-top:12px;font-size:.92rem;color:var(--muted);max-width:none}
+.legend{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:10px;font-size:.85rem;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:18px;height:12px;display:inline-block;border:1.5px solid}
+.sw.buy{background:var(--blue-soft);border-color:var(--blue)}
+.sw.own{background:var(--amber-soft);border-color:var(--amber)}
+.sw.ots{background:var(--surface);border-color:var(--line-strong)}
+.sw.man{background:var(--surface);border:1.5px dashed var(--line-strong)}
+.sw.sec{background:transparent;border:0;border-top:2.5px solid var(--amber);height:0;width:22px}
+
+/* svg classes */
+.z{fill:none;stroke:var(--line-strong);stroke-width:1;stroke-dasharray:5 4}
+.zt{fill:var(--muted);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.b{fill:var(--surface);stroke:var(--line-strong);stroke-width:1.2}
+.bi{fill:var(--surface);stroke:var(--amber);stroke-width:1}
+.b-buy{fill:var(--blue-soft);stroke:var(--blue);stroke-width:1.4}
+.b-own{fill:var(--amber-soft);stroke:var(--amber);stroke-width:1.4}
+.b-man{fill:var(--surface);stroke:var(--line-strong);stroke-width:1.2;stroke-dasharray:4 3}
+.b-sec{fill:var(--amber-soft);stroke:var(--amber);stroke-width:2}
+.b-hold{fill:var(--surface);stroke:var(--bad);stroke-width:1.6}
+.t{fill:var(--ink);font-size:12.5px;font-weight:600}
+.ts{fill:var(--muted);font-size:10.8px}
+.tn{fill:var(--muted);font-family:var(--mono);font-size:10.5px}
+.al{fill:var(--muted);font-family:var(--mono);font-size:10.5px}
+.al-s{fill:var(--amber-ink);font-family:var(--mono);font-size:10.5px;font-weight:600}
+.al-b{fill:var(--bad);font-family:var(--mono);font-size:10.5px}
+.a{fill:none;stroke:var(--muted);stroke-width:1.4}
+.a-s{fill:none;stroke:var(--amber);stroke-width:2.4}
+.a-b{fill:none;stroke:var(--bad);stroke-width:1.4;stroke-dasharray:5 4}
+.mk{fill:var(--muted)} .mk-s{fill:var(--amber)} .mk-b{fill:var(--bad)}
+.xk{stroke:var(--bad);stroke-width:2.2}
+
+/* steps */
+ol.steps{list-style:none;margin:0;padding:0;display:grid;gap:12px;counter-reset:st}
+ol.steps > li{counter-increment:st;display:grid;grid-template-columns:44px minmax(0,1fr);gap:14px;background:var(--surface);border:1px solid var(--line);padding:14px 16px;max-width:none}
+ol.steps > li::before{content:counter(st,decimal-leading-zero);font-family:var(--mono);font-weight:600;color:var(--amber-ink);font-size:1.05rem}
+ol.steps h3{margin:0 0 4px;font-size:1.12rem}
+ol.steps ul{margin:6px 0 0;padding-left:1.1em;display:grid;gap:3px;font-size:.94rem}
+ol.steps .when{font-family:var(--mono);font-size:.75rem;color:var(--muted);margin-left:8px;font-weight:400}
+
+/* gantt */
+.gantt{min-width:0;overflow-x:auto;border:1px solid var(--line);background:var(--surface)}
+.g{display:grid;grid-template-columns:230px repeat(18,minmax(30px,1fr));min-width:820px;font-size:.84rem}
+.g > div{border-bottom:1px solid var(--line);padding:6px 0;min-height:32px}
+.g .lbl{padding:6px 10px;border-right:1px solid var(--line)}
+.g .wk{font-family:var(--mono);font-size:.7rem;color:var(--muted);text-align:center;background:var(--surface-2)}
+.g .bar{margin:4px 2px;border-radius:2px;background:var(--line-strong);min-height:20px;padding:0}
+.g .bar.own{background:var(--amber)}
+.g .bar.buy{background:var(--blue)}
+.g .bar.civ{background:var(--muted)}
+.g .bar.mile{background:var(--bad)}
+
+/* grid of cards (security) */
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);padding:16px 18px;display:grid;gap:8px;align-content:start}
+.card h3{margin:0;font-size:1.15rem}
+.card ul{margin:0;padding-left:1.1em;display:grid;gap:5px;font-size:.94rem}
+@media (max-width:760px){.cards{grid-template-columns:1fr}}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);padding:14px}
+.kpi b{display:block;font-family:var(--mono);font-size:1.25rem;font-variant-numeric:tabular-nums}
+.kpi span{font-size:.86rem;color:var(--muted)}
+@media (max-width:760px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+footer{margin-top:56px;padding-top:16px;border-top:1px solid var(--line);font-size:.85rem;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+html{scroll-behavior:smooth}
+
+.b-alt{fill:var(--surface);stroke:var(--amber);stroke-width:1.6;stroke-dasharray:5 3}
+.al-a{fill:var(--amber-ink);font-family:var(--mono);font-size:10.5px}
+.a-a{fill:none;stroke:var(--amber);stroke-width:1.4;stroke-dasharray:5 4}
+.mk-a{fill:var(--amber)}
+.flows{display:grid;gap:18px;min-width:0}
+.flow{min-width:0}
+.int>*,.two>*{min-width:0}
+.flow h3{margin:0 0 6px}
+.flow p{font-size:.93rem;color:var(--muted);margin:0 0 10px}
+.flow figure{padding:12px}
+.flow figure svg{min-width:760px}
+.tag{font-family:var(--mono);font-size:.7rem;padding:1px 7px;border:1px solid var(--line-strong);border-radius:2px;color:var(--muted);white-space:nowrap;vertical-align:middle}
+.tag.new{color:var(--amber-ink);border-color:var(--amber);background:var(--amber-soft)}
+.tag.ready{color:var(--good);border-color:var(--good)}
+.int{display:grid;gap:14px}
+.int .card dl{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:6px 14px;margin:0;font-size:.93rem}
+.int .card dt{font-family:var(--mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding-top:3px}
+.int .card dd{margin:0}
+.int .card ol,.int .card ul{margin:0;padding-left:1.2em;display:grid;gap:3px}
+@media (max-width:640px){.int .card dl{grid-template-columns:1fr}.int .card dt{padding-top:8px}}
+.checks{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.checks li{display:flex;gap:10px;align-items:baseline}
+.checks li::before{content:"";flex:none;width:12px;height:12px;border:2px solid var(--line-strong);border-radius:2px;transform:translateY(2px)}
+.checks li.done::before{background:var(--good);border-color:var(--good)}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media (max-width:760px){.two{grid-template-columns:1fr}}
+td.good{color:var(--good);font-weight:600} td.bad{color:var(--bad);font-weight:600}
+</style>
+<div class="wrap">
+<header class="top">
+  <div>
+    <div class="eyebrow">Shri Balaji Associates · weighbridge software · operating plan</div>
+    <h1>How the weighbridge software runs, what it needs, and where to host it</h1>
+    <p class="lede">Every flow the software handles, the hardware and software to buy, whether to run it on the site PC or in the cloud, and what each integration needs before it can be switched on: indicator, printer, WhatsApp, SMS, email, Tally, backups and remote access.</p>
+  </div>
+  <dl class="stub">
+    <dt>Software</dt><dd>Phase 1 built</dd>
+    <dt>Tests</dt><dd>42 passing</dd>
+    <dt>Runs on</dt><dd>Site PC</dd>
+    <dt>Monthly infra</dt><dd>₹0 (Stage 1)</dd>
+    <dt>Cloud add-on</dt><dd>₹1.5–4k/mo</dd>
+    <dt>Go-live</dt><dd>~2–4 weeks</dd>
+  </dl>
+</header>
+<div class="hazard" aria-hidden="true"></div>
+
+<div class="layout">
+<nav class="toc" aria-label="Sections">
+  <ol>
+    <li><a href="#status">Where things stand</a></li>
+    <li><a href="#host">Cloud or in-house</a></li>
+    <li><a href="#flows">All the flows</a></li>
+    <li><a href="#hardware">Hardware</a></li>
+    <li><a href="#software">Software</a></li>
+    <li><a href="#integrations">Integrations</a></li>
+    <li><a href="#security">Security</a></li>
+    <li><a href="#rollout">Rollout plan</a></li>
+    <li><a href="#costs">Costs</a></li>
+    <li><a href="#next">Later phases</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<!-- 01 -->
+<section id="status">
+  <div class="eyebrow">01 · Where things stand</div>
+  <h2>The software is built. The site setup is what's left.</h2>
+  <div class="two">
+    <div class="card">
+      <h3>Built and tested</h3>
+      <ul class="checks">
+        <li class="done">Reads the weight indicator (serial or network); captures only a stable weight</li>
+        <li class="done">Two-weighment and stored-tare tickets, printed in two copies</li>
+        <li class="done">Fraud flags, frozen weights, supervisor-only hand entry</li>
+        <li class="done">Contractor and customer bills at ₹/MT with GST</li>
+        <li class="done">Tally voucher XML and direct push</li>
+        <li class="done">WhatsApp ticket image, SMS, email, all with retries</li>
+        <li class="done">Reports and Excel downloads</li>
+        <li class="done">Personal logins, roles, two-step login, lockout, audit chain, daily backup</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Still to do at site</h3>
+      <ul class="checks">
+        <li>Weighbridge PC set up and auto-starting the app</li>
+        <li>Indicator cable connected, format found with <code>sniff</code></li>
+        <li>Capacity and scale interval set from the stamping certificate</li>
+        <li>Parties with ₹/MT rates, materials, user accounts</li>
+        <li>Printer tested with the A5 ticket</li>
+        <li>Backup copy going to a USB drive and a cloud folder</li>
+        <li>Registrations: WhatsApp (Meta), SMS (DLT), Gmail app password</li>
+        <li>Tally ledgers created; one test voucher checked</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 02 -->
+<section id="host">
+  <div class="eyebrow">02 · Where to run it</div>
+  <h2>Run it in-house now. Add a small cloud server later if you want to check from anywhere.</h2>
+  <div class="verdict">
+    <ul>
+      <li><strong>Weighing must run on the site PC in every option.</strong> The indicator is wired to that PC by an RS-232 cable, and weighing can't stop just because the internet does. A cloud-only setup would stop every truck during every outage.</li>
+      <li><strong>Stage 1: in-house, ₹0 a month.</strong> The app, database and backups all live on the weighbridge PC. The owner checks it from a phone through Tailscale, a private link with its own two-step sign-in. Nothing is opened to the internet.</li>
+      <li><strong>Stage 2: hybrid, about ₹1.5–4k a month.</strong> A small server in an Indian cloud region receives a copy of every ticket from the site. The owner and accountant can then open reports and bills from any browser, even when the site PC is off. This needs new code (Phase 3, about 2–3 weeks).</li>
+    </ul>
+  </div>
+  <figure class="big">
+    <div class="scroll"><svg viewBox="0 0 1100 420" role="img" aria-label="Stage 1: indicator, printer and backup drive connect to the site PC, which sends messages out through the router. Stage 2 adds a cloud server that receives a copy of tickets.">
+<defs>
+<marker id="dm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="da" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="mk-a" d="M0,0 L10,5 L0,10 z"/></marker>
+</defs>
+<rect class="z" x="16" y="16" width="604" height="388"/>
+<text class="zt" x="32" y="40">Weighbridge site · works offline</text>
+<rect class="b-buy" x="40" y="60" width="160" height="48"/><text class="t" x="120" y="81" text-anchor="middle">Weight indicator</text><text class="ts" x="120" y="98" text-anchor="middle">stamped, sealed</text>
+<rect class="b" x="40" y="130" width="160" height="40"/><text class="t" x="120" y="155" text-anchor="middle">Ticket printer</text>
+<rect class="b" x="40" y="190" width="160" height="40"/><text class="t" x="120" y="215" text-anchor="middle">USB backup drive</text>
+<rect class="b" x="40" y="250" width="160" height="40"/><text class="t" x="120" y="275" text-anchor="middle">Online UPS 1–2 kVA</text>
+<rect class="b-own" x="260" y="56" width="210" height="236"/>
+<text class="t" x="365" y="80" text-anchor="middle">Weighbridge PC</text>
+<text class="ts" x="365" y="97" text-anchor="middle">Windows 11 Pro · BitLocker</text>
+<rect class="bi" x="274" y="110" width="182" height="30"/><text class="ts" x="365" y="130" text-anchor="middle">Weighbridge app (browser)</text>
+<rect class="bi" x="274" y="146" width="182" height="30"/><text class="ts" x="365" y="166" text-anchor="middle">Database + audit chain</text>
+<rect class="bi" x="274" y="182" width="182" height="30"/><text class="ts" x="365" y="202" text-anchor="middle">Outbox + daily backup</text>
+<rect class="bi" x="274" y="218" width="182" height="30"/><text class="ts" x="365" y="238" text-anchor="middle">Tailscale (remote view)</text>
+<rect class="bi" x="274" y="254" width="182" height="30"/><text class="ts" x="365" y="274" text-anchor="middle">Google Drive for desktop</text>
+<line class="a" x1="200" y1="84" x2="258" y2="84" marker-end="url(#dm)"/><text class="al" x="229" y="77" text-anchor="middle">RS-232</text>
+<line class="a" x1="258" y1="150" x2="202" y2="150" marker-end="url(#dm)"/><text class="al" x="229" y="143" text-anchor="middle">USB</text>
+<line class="a" x1="258" y1="210" x2="202" y2="210" marker-end="url(#dm)"/><text class="al" x="229" y="203" text-anchor="middle">copy</text>
+<line class="a" x1="200" y1="270" x2="258" y2="270" marker-end="url(#dm)"/><text class="al" x="229" y="263" text-anchor="middle">power</text>
+<rect class="b" x="260" y="320" width="210" height="44"/><text class="t" x="365" y="340" text-anchor="middle">TallyPrime</text><text class="ts" x="365" y="356" text-anchor="middle">same PC or office LAN</text>
+<line class="a" x1="365" y1="292" x2="365" y2="318" marker-end="url(#dm)"/><text class="al" x="373" y="310">XML / port 9000</text>
+<rect class="b" x="500" y="140" width="110" height="60"/><text class="t" x="555" y="164" text-anchor="middle">Router</text><text class="ts" x="555" y="182" text-anchor="middle">broadband + 4G</text>
+<line class="a" x1="470" y1="170" x2="498" y2="170" marker-end="url(#dm)"/>
+<rect class="z" x="636" y="16" width="448" height="388"/>
+<text class="zt" x="652" y="40">Internet</text>
+<line class="a" x1="610" y1="170" x2="648" y2="170"/>
+<line class="a" x1="648" y1="82" x2="648" y2="322"/>
+<rect class="b" x="664" y="60" width="180" height="44"/><text class="t" x="754" y="80" text-anchor="middle">WhatsApp Cloud API</text><text class="ts" x="754" y="96" text-anchor="middle">Meta</text>
+<rect class="b" x="664" y="120" width="180" height="44"/><text class="t" x="754" y="140" text-anchor="middle">SMS gateway</text><text class="ts" x="754" y="156" text-anchor="middle">DLT-registered</text>
+<rect class="b" x="664" y="180" width="180" height="44"/><text class="t" x="754" y="200" text-anchor="middle">Email (SMTP)</text><text class="ts" x="754" y="216" text-anchor="middle">Gmail / Workspace</text>
+<rect class="b" x="664" y="240" width="180" height="44"/><text class="t" x="754" y="260" text-anchor="middle">Google Drive / OneDrive</text><text class="ts" x="754" y="276" text-anchor="middle">offsite backup copy</text>
+<rect class="b" x="664" y="300" width="180" height="44"/><text class="t" x="754" y="320" text-anchor="middle">Tailscale network</text><text class="ts" x="754" y="336" text-anchor="middle">2-step sign-in</text>
+<line class="a" x1="648" y1="82" x2="662" y2="82" marker-end="url(#dm)"/>
+<line class="a" x1="648" y1="142" x2="662" y2="142" marker-end="url(#dm)"/>
+<line class="a" x1="648" y1="202" x2="662" y2="202" marker-end="url(#dm)"/>
+<line class="a" x1="648" y1="262" x2="662" y2="262" marker-end="url(#dm)"/>
+<line class="a" x1="648" y1="322" x2="662" y2="322" marker-start="url(#dm)" marker-end="url(#dm)"/>
+<text class="al" x="656" y="376">all outbound; no ports opened</text>
+<rect class="b" x="884" y="300" width="180" height="44"/><text class="t" x="974" y="320" text-anchor="middle">Owner phone / laptop</text><text class="ts" x="974" y="336" text-anchor="middle">Tailscale app</text>
+<line class="a" x1="882" y1="322" x2="846" y2="322" marker-end="url(#dm)"/>
+<rect class="b-alt" x="884" y="60" width="180" height="104"/>
+<text class="t" x="974" y="84" text-anchor="middle">Stage 2: cloud server</text>
+<text class="ts" x="974" y="104" text-anchor="middle">India region · 2 vCPU 4 GB</text>
+<text class="ts" x="974" y="122" text-anchor="middle">ticket copy + dashboard</text>
+<text class="ts" x="974" y="140" text-anchor="middle">HTTPS · 2-step login</text>
+<text class="al-a" x="974" y="157" text-anchor="middle">← sync from site (mTLS)</text>
+<polyline class="a-a" points="648,112 870,112" marker-end="url(#da)"/>
+<rect class="b" x="884" y="190" width="180" height="44"/><text class="t" x="974" y="210" text-anchor="middle">Owner / accountant</text><text class="ts" x="974" y="226" text-anchor="middle">any browser (Stage 2)</text>
+<line class="a-a" x1="974" y1="188" x2="974" y2="166" marker-end="url(#da)"/>
+</svg></div>
+    <div class="legend">
+      <span><i class="sw buy"></i>Certified weighing equipment</span>
+      <span><i class="sw own"></i>Your weighbridge software</span>
+      <span><i class="sw ots"></i>Off-the-shelf hardware or service</span>
+      <span><i class="sw" style="border-style:dashed;border-color:var(--amber)"></i>Stage 2, needs new code</span>
+    </div>
+    <figcaption>Every connection from the site goes outward. Messages, backups, the Tailscale link and the Stage 2 sync are all started by the site PC, so no one on the internet can connect into it.</figcaption>
+  </figure>
+
+  <div class="tbl mid">
+    <table>
+      <thead><tr><th></th><th>Stage 1 · in-house</th><th>Stage 2 · hybrid</th><th>Cloud only</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Where weighing runs</strong></td><td>Site PC</td><td>Site PC</td><td>Cloud, with a relay box at site</td></tr>
+        <tr><td><strong>Internet down</strong></td><td class="good">Weighing continues; messages wait and send later</td><td class="good">Same; dashboard shows data up to the last sync</td><td class="bad">Weighing stops</td></tr>
+        <tr><td><strong>Owner view from outside</strong></td><td>Phone via Tailscale; site PC must be on</td><td class="good">Any browser, any time</td><td>Any browser</td></tr>
+        <tr><td><strong>Monthly cost</strong></td><td class="good">₹0 infrastructure</td><td>₹1.5–4k</td><td>₹2–5k, plus a site PC anyway</td></tr>
+        <tr><td><strong>Exposed to the internet</strong></td><td class="good">Nothing</td><td>Cloud login page: needs HTTPS, 2-step, firewall, security test</td><td>Everything</td></tr>
+        <tr><td><strong>If the PC's disk dies</strong></td><td>Restore last backup (at most one day lost; press "Back up now" at shift end)</td><td class="good">Cloud has every synced ticket</td><td>Cloud has everything</td></tr>
+        <tr><td><strong>Upkeep</strong></td><td>Windows updates on one PC</td><td>Plus a managed Linux server</td><td>Server plus site relay</td></tr>
+        <tr><td><strong>Second site later</strong></td><td>Separate system per site</td><td class="good">All sites in one dashboard</td><td>One system</td></tr>
+        <tr><td><strong>Data location (DPDP Act)</strong></td><td>Your premises</td><td>Your premises + chosen Indian region</td><td>Indian region</td></tr>
+        <tr><td><strong>Code needed</strong></td><td class="good">None; ready now</td><td>Phase 3: sync agent + cloud app</td><td class="bad">Major rework, not advised</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 03 -->
+<section id="flows">
+  <div class="eyebrow">03 · Flows</div>
+  <h2>All the flows, step by step</h2>
+  <p>Each diagram shows the normal path left to right. <span style="color:var(--bad)">Red</span> boxes are where the software refuses and why. <span style="color:var(--amber-ink)">Amber</span> boxes are side paths or checks. The numbers (3 seconds, ±10 kg, 7 days, 5%) are the defaults in <code>config.toml</code> and can be changed.</p>
+  <div class="flows">
+<div class="flow" id="f1">
+<h3>Two-weighment ticket <span class="tag ready">in the software now</span></h3>
+<p>The normal trip. A vehicle&#x27;s second visit to the platform automatically closes its open ticket. The weight is always read from the indicator at the moment of capture.</p>
+<figure><div class="scroll"><svg viewBox="0 0 1236 250" role="img" aria-label="Two-weighment ticket: Vehicle arrives → Party + material → Wait for Stable → Capture → Load or unload → Capture again → Print + send">
+<defs>
+<marker id="f1m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="f1b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk-b" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="f1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk-a" d="M0,0 L10,5 L0,10 z"/></marker>
+</defs>
+<rect class="b" x="12" y="16" width="156" height="96"/>
+<text class="tn" x="24" y="34">1</text>
+<text class="t" x="24" y="56">Vehicle arrives</text>
+<text class="ts" x="24" y="76">operator types plate</text>
+<text class="ts" x="24" y="94">screen: 1st or 2nd?</text>
+<line class="a" x1="168" y1="64.0" x2="186" y2="64.0" marker-end="url(#f1m)"/>
+<rect class="b" x="188" y="16" width="156" height="96"/>
+<text class="tn" x="200" y="34">2</text>
+<text class="t" x="200" y="56">Party + material</text>
+<text class="ts" x="200" y="76">last ones prefilled</text>
+<text class="ts" x="200" y="94">remarks optional</text>
+<line class="a" x1="344" y1="64.0" x2="362" y2="64.0" marker-end="url(#f1m)"/>
+<rect class="b" x="364" y="16" width="156" height="96"/>
+<text class="tn" x="376" y="34">3</text>
+<text class="t" x="376" y="56">Wait for Stable</text>
+<text class="ts" x="376" y="76">3 s within ±10 kg</text>
+<text class="ts" x="376" y="94">display turns green</text>
+<line class="a" x1="520" y1="64.0" x2="538" y2="64.0" marker-end="url(#f1m)"/>
+<rect class="b" x="540" y="16" width="156" height="96"/>
+<text class="tn" x="552" y="34">4</text>
+<text class="t" x="552" y="56">Capture</text>
+<text class="ts" x="552" y="76">ticket opens</text>
+<text class="ts" x="552" y="94">WB/2627/000123</text>
+<line class="a" x1="696" y1="64.0" x2="714" y2="64.0" marker-end="url(#f1m)"/>
+<rect class="b" x="716" y="16" width="156" height="96"/>
+<text class="tn" x="728" y="34">5</text>
+<text class="t" x="728" y="56">Load or unload</text>
+<text class="ts" x="728" y="76">truck leaves</text>
+<text class="ts" x="728" y="94">ticket stays open</text>
+<line class="a" x1="872" y1="64.0" x2="890" y2="64.0" marker-end="url(#f1m)"/>
+<rect class="b-own" x="892" y="16" width="156" height="96"/>
+<text class="tn" x="904" y="34">6</text>
+<text class="t" x="904" y="56">Capture again</text>
+<text class="ts" x="904" y="76">net = gross − tare</text>
+<text class="ts" x="904" y="94">ticket closes</text>
+<line class="a" x1="1048" y1="64.0" x2="1066" y2="64.0" marker-end="url(#f1m)"/>
+<rect class="b" x="1068" y="16" width="156" height="96"/>
+<text class="tn" x="1080" y="34">7</text>
+<text class="t" x="1080" y="56">Print + send</text>
+<text class="ts" x="1080" y="76">2 copies (A5)</text>
+<text class="ts" x="1080" y="94">WhatsApp/SMS/email</text>
+<line class="a-b" x1="90.0" y1="112" x2="90.0" y2="170" marker-end="url(#f1b)"/>
+<text class="al-b" x="97.0" y="146">blocked</text>
+<rect class="b-hold" x="12" y="172" width="156" height="60"/>
+<text class="t" x="22" y="196">Vehicle blocked</text>
+<text class="ts" x="22" y="216">stop; call supervisor</text>
+<line class="a-b" x1="442.0" y1="112" x2="442.0" y2="170" marker-end="url(#f1b)"/>
+<text class="al-b" x="449.0" y="146">empty/unstable</text>
+<rect class="b-hold" x="364" y="172" width="156" height="60"/>
+<text class="t" x="374" y="196">Capture refused</text>
+<text class="ts" x="374" y="216">wait, or reposition</text>
+<line class="a-a" x1="970.0" y1="112" x2="970.0" y2="170" marker-end="url(#f1a)"/>
+<text class="al-a" x="977.0" y="146">checks</text>
+<rect class="b-alt" x="892" y="172" width="156" height="60"/>
+<text class="t" x="902" y="196">Net &lt; 100 kg: refused</text>
+<text class="ts" x="902" y="216">tare off &gt; 5%: flagged</text>
+</svg></div></figure>
+</div>
+<div class="flow" id="f2">
+<h3>One weighment with stored tare <span class="tag ready">in the software now</span></h3>
+<p>For trucks weighed empty in the last 7 days. The operator picks the one-pass option; net is gross minus the stored tare, and the ticket is marked STORED_TARE.</p>
+<figure><div class="scroll"><svg viewBox="0 0 884 250" role="img" aria-label="One weighment with stored tare: Loaded truck → Choose option → Stable + capture → Ticket closes → Print + send">
+<defs>
+<marker id="f2m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="f2b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk-b" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="f2a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk-a" d="M0,0 L10,5 L0,10 z"/></marker>
+</defs>
+<rect class="b" x="12" y="16" width="156" height="96"/>
+<text class="tn" x="24" y="34">1</text>
+<text class="t" x="24" y="56">Loaded truck</text>
+<text class="ts" x="24" y="76">operator types plate</text>
+<text class="ts" x="24" y="94">stored tare shown</text>
+<line class="a" x1="168" y1="64.0" x2="186" y2="64.0" marker-end="url(#f2m)"/>
+<rect class="b" x="188" y="16" width="156" height="96"/>
+<text class="tn" x="200" y="34">2</text>
+<text class="t" x="200" y="56">Choose option</text>
+<text class="ts" x="200" y="76">One weighment,</text>
+<text class="ts" x="200" y="94">use stored tare</text>
+<line class="a" x1="344" y1="64.0" x2="362" y2="64.0" marker-end="url(#f2m)"/>
+<rect class="b" x="364" y="16" width="156" height="96"/>
+<text class="tn" x="376" y="34">3</text>
+<text class="t" x="376" y="56">Stable + capture</text>
+<text class="ts" x="376" y="76">gross from indicator</text>
+<text class="ts" x="376" y="94"></text>
+<line class="a" x1="520" y1="64.0" x2="538" y2="64.0" marker-end="url(#f2m)"/>
+<rect class="b-own" x="540" y="16" width="156" height="96"/>
+<text class="tn" x="552" y="34">4</text>
+<text class="t" x="552" y="56">Ticket closes</text>
+<text class="ts" x="552" y="76">net = gross − stored</text>
+<text class="ts" x="552" y="94">flag: STORED_TARE</text>
+<line class="a" x1="696" y1="64.0" x2="714" y2="64.0" marker-end="url(#f2m)"/>
+<rect class="b" x="716" y="16" width="156" height="96"/>
+<text class="tn" x="728" y="34">5</text>
+<text class="t" x="728" y="56">Print + send</text>
+<text class="ts" x="728" y="76">same as normal</text>
+<text class="ts" x="728" y="94"></text>
+<line class="a-b" x1="90.0" y1="112" x2="90.0" y2="170" marker-end="url(#f2b)"/>
+<text class="al-b" x="97.0" y="146">none / &gt; 7 days</text>
+<rect class="b-hold" x="12" y="172" width="156" height="60"/>
+<text class="t" x="22" y="196">Option not offered</text>
+<text class="ts" x="22" y="216">weigh twice or re-tare</text>
+<line class="a-b" x1="442.0" y1="112" x2="442.0" y2="170" marker-end="url(#f2b)"/>
+<text class="al-b" x="449.0" y="146">gross ≤ tare</text>
+<rect class="b-hold" x="364" y="172" width="156" height="60"/>
+<text class="t" x="374" y="196">Refused</text>
+<text class="ts" x="374" y="216">is the truck loaded?</text>
+</svg></div></figure>
+</div>
+<div class="flow" id="f3">
+<h3>Weekly tare refresh <span class="tag ready">in the software now</span></h3>
+<p>Keeps stored tares honest. Tares are also learned automatically at every normal second weighment, unless they differ more than 5% from usual (then flagged and not learned).</p>
+<figure><div class="scroll"><svg viewBox="0 0 708 250" role="img" aria-label="Weekly tare refresh: Empty truck on → Wait for Stable → Record tare only → Tare saved">
+<defs>
+<marker id="f3m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="f3b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk-b" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="f3a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk-a" d="M0,0 L10,5 L0,10 z"/></marker>
+</defs>
+<rect class="b" x="12" y="16" width="156" height="96"/>
+<text class="tn" x="24" y="34">1</text>
+<text class="t" x="24" y="56">Empty truck on</text>
+<text class="ts" x="24" y="76">operator types plate</text>
+<text class="ts" x="24" y="94"></text>
+<line class="a" x1="168" y1="64.0" x2="186" y2="64.0" marker-end="url(#f3m)"/>
+<rect class="b" x="188" y="16" width="156" height="96"/>
+<text class="tn" x="200" y="34">2</text>
+<text class="t" x="200" y="56">Wait for Stable</text>
+<text class="ts" x="200" y="76"></text>
+<text class="ts" x="200" y="94"></text>
+<line class="a" x1="344" y1="64.0" x2="362" y2="64.0" marker-end="url(#f3m)"/>
+<rect class="b" x="364" y="16" width="156" height="96"/>
+<text class="tn" x="376" y="34">3</text>
+<text class="t" x="376" y="56">Record tare only</text>
+<text class="ts" x="376" y="76">no ticket is made</text>
+<text class="ts" x="376" y="94"></text>
+<line class="a" x1="520" y1="64.0" x2="538" y2="64.0" marker-end="url(#f3m)"/>
+<rect class="b-own" x="540" y="16" width="156" height="96"/>
+<text class="tn" x="552" y="34">4</text>
+<text class="t" x="552" y="56">Tare saved</text>
+<text class="ts" x="552" y="76">audit: old → new kg</text>
+<text class="ts" x="552" y="94">valid for 7 days</text>
+<line class="a-b" x1="442.0" y1="112" x2="442.0" y2="170" marker-end="url(#f3b)"/>
+<text class="al-b" x="449.0" y="146">open ticket</text>
+<rect class="b-hold" x="364" y="172" width="156" height="60"/>
+<text class="t" x="374" y="196">Refused</text>
+<text class="ts" x="374" y="216">finish 2nd weighment</text>
+</svg></div></figure>
+</div>
+<div class="flow" id="f4">
+<h3>Indicator fails: supervisor enters weight <span class="tag ready">in the software now</span></h3>
+<p>Operators can never type a weight. A supervisor can, with a reason, and the ticket carries a permanent MANUAL flag that shows on the owner&#x27;s reports.</p>
+<figure><div class="scroll"><svg viewBox="0 0 884 250" role="img" aria-label="Indicator fails: supervisor enters weight: No signal → Supervisor logs in → Hand entry → Ticket saved → Owner reviews">
+<defs>
+<marker id="f4m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="f4b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk-b" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="f4a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk-a" d="M0,0 L10,5 L0,10 z"/></marker>
+</defs>
+<rect class="b" x="12" y="16" width="156" height="96"/>
+<text class="tn" x="24" y="34">1</text>
+<text class="t" x="24" y="56">No signal</text>
+<text class="ts" x="24" y="76">display grey / red</text>
+<text class="ts" x="24" y="94">System page: raw text</text>
+<line class="a" x1="168" y1="64.0" x2="186" y2="64.0" marker-end="url(#f4m)"/>
+<rect class="b" x="188" y="16" width="156" height="96"/>
+<text class="tn" x="200" y="34">2</text>
+<text class="t" x="200" y="56">Supervisor logs in</text>
+<text class="ts" x="200" y="76">own account</text>
+<text class="ts" x="200" y="94"></text>
+<line class="a" x1="344" y1="64.0" x2="362" y2="64.0" marker-end="url(#f4m)"/>
+<rect class="b" x="364" y="16" width="156" height="96"/>
+<text class="tn" x="376" y="34">3</text>
+<text class="t" x="376" y="56">Hand entry</text>
+<text class="ts" x="376" y="76">weight + reason</text>
+<text class="ts" x="376" y="94">tick &#x27;use this weight&#x27;</text>
+<line class="a" x1="520" y1="64.0" x2="538" y2="64.0" marker-end="url(#f4m)"/>
+<rect class="b-own" x="540" y="16" width="156" height="96"/>
+<text class="tn" x="552" y="34">4</text>
+<text class="t" x="552" y="56">Ticket saved</text>
+<text class="ts" x="552" y="76">flag: MANUAL</text>
+<text class="ts" x="552" y="94">* on printed ticket</text>
+<line class="a" x1="696" y1="64.0" x2="714" y2="64.0" marker-end="url(#f4m)"/>
+<rect class="b" x="716" y="16" width="156" height="96"/>
+<text class="tn" x="728" y="34">5</text>
+<text class="t" x="728" y="56">Owner reviews</text>
+<text class="ts" x="728" y="76">Tickets → flagged</text>
+<text class="ts" x="728" y="94">daily summary count</text>
+<line class="a-b" x1="266.0" y1="112" x2="266.0" y2="170" marker-end="url(#f4b)"/>
+<text class="al-b" x="273.0" y="146">operator tries</text>
+<rect class="b-hold" x="188" y="172" width="156" height="60"/>
+<text class="t" x="198" y="196">Refused</text>
+<text class="ts" x="198" y="216">supervisor only</text>
+<line class="a-a" x1="90.0" y1="112" x2="90.0" y2="170" marker-end="url(#f4a)"/>
+<text class="al-a" x="97.0" y="146">then</text>
+<rect class="b-alt" x="12" y="172" width="156" height="60"/>
+<text class="t" x="22" y="196">Fix the link</text>
+<text class="ts" x="22" y="216">cable, COM port, power</text>
+</svg></div></figure>
+</div>
+<div class="flow" id="f5">
+<h3>Correct or cancel a ticket <span class="tag ready">in the software now</span></h3>
+<p>Weights of a closed ticket can never change, not even by editing the database. Only party and material can be corrected, or the whole ticket cancelled, each with a reason.</p>
+<figure><div class="scroll"><svg viewBox="0 0 708 250" role="img" aria-label="Correct or cancel a ticket: Open the ticket → Supervisor acts → Give a reason → Saved + logged">
+<defs>
+<marker id="f5m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="f5b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk-b" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="f5a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk-a" d="M0,0 L10,5 L0,10 z"/></marker>
+</defs>
+<rect class="b" x="12" y="16" width="156" height="96"/>
+<text class="tn" x="24" y="34">1</text>
+<text class="t" x="24" y="56">Open the ticket</text>
+<text class="ts" x="24" y="76">Tickets page</text>
+<text class="ts" x="24" y="94"></text>
+<line class="a" x1="168" y1="64.0" x2="186" y2="64.0" marker-end="url(#f5m)"/>
+<rect class="b" x="188" y="16" width="156" height="96"/>
+<text class="tn" x="200" y="34">2</text>
+<text class="t" x="200" y="56">Supervisor acts</text>
+<text class="ts" x="200" y="76">correct party/material</text>
+<text class="ts" x="200" y="94">or cancel</text>
+<line class="a" x1="344" y1="64.0" x2="362" y2="64.0" marker-end="url(#f5m)"/>
+<rect class="b" x="364" y="16" width="156" height="96"/>
+<text class="tn" x="376" y="34">3</text>
+<text class="t" x="376" y="56">Give a reason</text>
+<text class="ts" x="376" y="76">at least 5 characters</text>
+<text class="ts" x="376" y="94"></text>
+<line class="a" x1="520" y1="64.0" x2="538" y2="64.0" marker-end="url(#f5m)"/>
+<rect class="b-own" x="540" y="16" width="156" height="96"/>
+<text class="tn" x="552" y="34">4</text>
+<text class="t" x="552" y="56">Saved + logged</text>
+<text class="ts" x="552" y="76">flag: EDITED</text>
+<text class="ts" x="552" y="94">or status cancelled</text>
+<line class="a-b" x1="266.0" y1="112" x2="266.0" y2="170" marker-end="url(#f5b)"/>
+<text class="al-b" x="273.0" y="146">on a bill</text>
+<rect class="b-hold" x="188" y="172" width="156" height="60"/>
+<text class="t" x="198" y="196">Refused</text>
+<text class="ts" x="198" y="216">owner cancels bill first</text>
+</svg></div></figure>
+</div>
+<div class="flow" id="f6">
+<h3>Login <span class="tag ready">in the software now</span></h3>
+<p>Personal accounts only. Office sessions end after 30 minutes idle; every session ends after 12 hours. Owner/admin accounts must use two-step login.</p>
+<figure><div class="scroll"><svg viewBox="0 0 884 250" role="img" aria-label="Login: Username + password → Password checked → Two-step code → First login? → Home by role">
+<defs>
+<marker id="f6m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="f6b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk-b" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="f6a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk-a" d="M0,0 L10,5 L0,10 z"/></marker>
+</defs>
+<rect class="b" x="12" y="16" width="156" height="96"/>
+<text class="tn" x="24" y="34">1</text>
+<text class="t" x="24" y="56">Username + password</text>
+<text class="ts" x="24" y="76">login page</text>
+<text class="ts" x="24" y="94">CSRF protected</text>
+<line class="a" x1="168" y1="64.0" x2="186" y2="64.0" marker-end="url(#f6m)"/>
+<rect class="b" x="188" y="16" width="156" height="96"/>
+<text class="tn" x="200" y="34">2</text>
+<text class="t" x="200" y="56">Password checked</text>
+<text class="ts" x="200" y="76">scrypt hash</text>
+<text class="ts" x="200" y="94"></text>
+<line class="a" x1="344" y1="64.0" x2="362" y2="64.0" marker-end="url(#f6m)"/>
+<rect class="b" x="364" y="16" width="156" height="96"/>
+<text class="tn" x="376" y="34">3</text>
+<text class="t" x="376" y="56">Two-step code</text>
+<text class="ts" x="376" y="76">authenticator app</text>
+<text class="ts" x="376" y="94">if turned on</text>
+<line class="a" x1="520" y1="64.0" x2="538" y2="64.0" marker-end="url(#f6m)"/>
+<rect class="b" x="540" y="16" width="156" height="96"/>
+<text class="tn" x="552" y="34">4</text>
+<text class="t" x="552" y="56">First login?</text>
+<text class="ts" x="552" y="76">must set own password</text>
+<text class="ts" x="552" y="94"></text>
+<line class="a" x1="696" y1="64.0" x2="714" y2="64.0" marker-end="url(#f6m)"/>
+<rect class="b-own" x="716" y="16" width="156" height="96"/>
+<text class="tn" x="728" y="34">5</text>
+<text class="t" x="728" y="56">Home by role</text>
+<text class="ts" x="728" y="76">Weigh / Billing /</text>
+<text class="ts" x="728" y="94">Reports</text>
+<line class="a-b" x1="266.0" y1="112" x2="266.0" y2="170" marker-end="url(#f6b)"/>
+<text class="al-b" x="273.0" y="146">5 wrong</text>
+<rect class="b-hold" x="188" y="172" width="156" height="60"/>
+<text class="t" x="198" y="196">Locked 15 minutes</text>
+<text class="ts" x="198" y="216">attempt logged</text>
+<line class="a-a" x1="442.0" y1="112" x2="442.0" y2="170" marker-end="url(#f6a)"/>
+<text class="al-a" x="449.0" y="146">admin w/o 2-step</text>
+<rect class="b-alt" x="364" y="172" width="156" height="60"/>
+<text class="t" x="374" y="196">Must enrol first</text>
+<text class="ts" x="374" y="216">QR code shown</text>
+</svg></div></figure>
+</div>
+<div class="flow" id="f7">
+<h3>Month-end billing to Tally <span class="tag ready">in the software now</span></h3>
+<p>Customers get a tax invoice (Sales voucher); contractors get a work statement (Purchase voucher). CGST + SGST when the party&#x27;s GSTIN starts with 27, otherwise IGST.</p>
+<figure><div class="scroll"><svg viewBox="0 0 1060 250" role="img" aria-label="Month-end billing to Tally: Billing page → Party + dates → Preview → Create bill → Print / Excel → To Tally">
+<defs>
+<marker id="f7m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="f7b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk-b" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="f7a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk-a" d="M0,0 L10,5 L0,10 z"/></marker>
+</defs>
+<rect class="b" x="12" y="16" width="156" height="96"/>
+<text class="tn" x="24" y="34">1</text>
+<text class="t" x="24" y="56">Billing page</text>
+<text class="ts" x="24" y="76">accounts or owner</text>
+<text class="ts" x="24" y="94"></text>
+<line class="a" x1="168" y1="64.0" x2="186" y2="64.0" marker-end="url(#f7m)"/>
+<rect class="b" x="188" y="16" width="156" height="96"/>
+<text class="tn" x="200" y="34">2</text>
+<text class="t" x="200" y="56">Party + dates</text>
+<text class="ts" x="200" y="76">rate from party</text>
+<text class="ts" x="200" y="94">or override</text>
+<line class="a" x1="344" y1="64.0" x2="362" y2="64.0" marker-end="url(#f7m)"/>
+<rect class="b" x="364" y="16" width="156" height="96"/>
+<text class="tn" x="376" y="34">3</text>
+<text class="t" x="376" y="56">Preview</text>
+<text class="ts" x="376" y="76">trips, MT, ₹, GST</text>
+<text class="ts" x="376" y="94"></text>
+<line class="a" x1="520" y1="64.0" x2="538" y2="64.0" marker-end="url(#f7m)"/>
+<rect class="b-own" x="540" y="16" width="156" height="96"/>
+<text class="tn" x="552" y="34">4</text>
+<text class="t" x="552" y="56">Create bill</text>
+<text class="ts" x="552" y="76">BILL/2627/0001</text>
+<text class="ts" x="552" y="94">tickets locked to it</text>
+<line class="a" x1="696" y1="64.0" x2="714" y2="64.0" marker-end="url(#f7m)"/>
+<rect class="b" x="716" y="16" width="156" height="96"/>
+<text class="tn" x="728" y="34">5</text>
+<text class="t" x="728" y="56">Print / Excel</text>
+<text class="ts" x="728" y="76">for the party</text>
+<text class="ts" x="728" y="94"></text>
+<line class="a" x1="872" y1="64.0" x2="890" y2="64.0" marker-end="url(#f7m)"/>
+<rect class="b" x="892" y="16" width="156" height="96"/>
+<text class="tn" x="904" y="34">6</text>
+<text class="t" x="904" y="56">To Tally</text>
+<text class="ts" x="904" y="76">XML download</text>
+<text class="ts" x="904" y="94">or Send to Tally</text>
+<line class="a-b" x1="618.0" y1="112" x2="618.0" y2="170" marker-end="url(#f7b)"/>
+<text class="al-b" x="625.0" y="146">none unbilled</text>
+<rect class="b-hold" x="540" y="172" width="156" height="60"/>
+<text class="t" x="550" y="196">Nothing to bill</text>
+<text class="ts" x="550" y="216">check dates / party</text>
+<line class="a-b" x1="970.0" y1="112" x2="970.0" y2="170" marker-end="url(#f7b)"/>
+<text class="al-b" x="977.0" y="146">Tally error</text>
+<rect class="b-hold" x="892" y="172" width="156" height="60"/>
+<text class="t" x="902" y="196">Error shown</text>
+<text class="ts" x="902" y="216">open Tally, retry, or XML</text>
+</svg></div></figure>
+</div>
+<div class="flow" id="f8">
+<h3>Messages: WhatsApp, SMS, email <span class="tag ready">in the software now</span></h3>
+<p>Messages never hold up weighing. They go into an outbox on the PC and a background job sends them.</p>
+<figure><div class="scroll"><svg viewBox="0 0 884 250" role="img" aria-label="Messages: WhatsApp, SMS, email: Ticket closes → Ticket image → Queued → Worker (20 s) → Sent">
+<defs>
+<marker id="f8m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="f8b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk-b" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="f8a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk-a" d="M0,0 L10,5 L0,10 z"/></marker>
+</defs>
+<rect class="b" x="12" y="16" width="156" height="96"/>
+<text class="tn" x="24" y="34">1</text>
+<text class="t" x="24" y="56">Ticket closes</text>
+<text class="ts" x="24" y="76"></text>
+<text class="ts" x="24" y="94"></text>
+<line class="a" x1="168" y1="64.0" x2="186" y2="64.0" marker-end="url(#f8m)"/>
+<rect class="b" x="188" y="16" width="156" height="96"/>
+<text class="tn" x="200" y="34">2</text>
+<text class="t" x="200" y="56">Ticket image</text>
+<text class="ts" x="200" y="76">PNG is drawn</text>
+<text class="ts" x="200" y="94"></text>
+<line class="a" x1="344" y1="64.0" x2="362" y2="64.0" marker-end="url(#f8m)"/>
+<rect class="b" x="364" y="16" width="156" height="96"/>
+<text class="tn" x="376" y="34">3</text>
+<text class="t" x="376" y="56">Queued</text>
+<text class="ts" x="376" y="76">one per recipient</text>
+<text class="ts" x="376" y="94">per channel</text>
+<line class="a" x1="520" y1="64.0" x2="538" y2="64.0" marker-end="url(#f8m)"/>
+<rect class="b-own" x="540" y="16" width="156" height="96"/>
+<text class="tn" x="552" y="34">4</text>
+<text class="t" x="552" y="56">Worker (20 s)</text>
+<text class="ts" x="552" y="76">sends what is due</text>
+<text class="ts" x="552" y="94"></text>
+<line class="a" x1="696" y1="64.0" x2="714" y2="64.0" marker-end="url(#f8m)"/>
+<rect class="b" x="716" y="16" width="156" height="96"/>
+<text class="tn" x="728" y="34">5</text>
+<text class="t" x="728" y="56">Sent</text>
+<text class="ts" x="728" y="76">shown on ticket page</text>
+<text class="ts" x="728" y="94"></text>
+<line class="a-b" x1="618.0" y1="112" x2="618.0" y2="170" marker-end="url(#f8b)"/>
+<text class="al-b" x="625.0" y="146">send fails</text>
+<rect class="b-hold" x="540" y="172" width="156" height="60"/>
+<text class="t" x="550" y="196">Retry 2, 4, 8… min</text>
+<text class="ts" x="550" y="216">failed after 6 tries</text>
+<line class="a-a" x1="794.0" y1="112" x2="794.0" y2="170" marker-end="url(#f8a)"/>
+<text class="al-a" x="801.0" y="146">if failed</text>
+<rect class="b-alt" x="716" y="172" width="156" height="60"/>
+<text class="t" x="726" y="196">System page</text>
+<text class="ts" x="726" y="216">Retry button</text>
+</svg></div></figure>
+</div>
+<div class="flow" id="f9">
+<h3>Daily jobs <span class="tag ready">in the software now</span></h3>
+<p>Run by the app itself while it is open. Keep the app running (auto-start with Windows) so these happen every day.</p>
+<figure><div class="scroll"><svg viewBox="0 0 708 250" role="img" aria-label="Daily jobs: First run of day → Keep last 30 → At 20:00 → Email to owner">
+<defs>
+<marker id="f9m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="f9b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk-b" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="f9a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk-a" d="M0,0 L10,5 L0,10 z"/></marker>
+</defs>
+<rect class="b-own" x="12" y="16" width="156" height="96"/>
+<text class="tn" x="24" y="34">1</text>
+<text class="t" x="24" y="56">First run of day</text>
+<text class="ts" x="24" y="76">database backup</text>
+<text class="ts" x="24" y="94">data\backups</text>
+<line class="a" x1="168" y1="64.0" x2="186" y2="64.0" marker-end="url(#f9m)"/>
+<rect class="b" x="188" y="16" width="156" height="96"/>
+<text class="tn" x="200" y="34">2</text>
+<text class="t" x="200" y="56">Keep last 30</text>
+<text class="ts" x="200" y="76">+ copy to extra_dir</text>
+<text class="ts" x="200" y="94">USB / Drive folder</text>
+<line class="a" x1="344" y1="64.0" x2="362" y2="64.0" marker-end="url(#f9m)"/>
+<rect class="b" x="364" y="16" width="156" height="96"/>
+<text class="tn" x="376" y="34">3</text>
+<text class="t" x="376" y="56">At 20:00</text>
+<text class="ts" x="376" y="76">day summary built</text>
+<text class="ts" x="376" y="94"></text>
+<line class="a" x1="520" y1="64.0" x2="538" y2="64.0" marker-end="url(#f9m)"/>
+<rect class="b" x="540" y="16" width="156" height="96"/>
+<text class="tn" x="552" y="34">4</text>
+<text class="t" x="552" y="56">Email to owner</text>
+<text class="ts" x="552" y="76">trips, MT, flags</text>
+<text class="ts" x="552" y="94">+ audit chain code</text>
+<line class="a-a" x1="266.0" y1="112" x2="266.0" y2="170" marker-end="url(#f9a)"/>
+<text class="al-a" x="273.0" y="146">drive missing</text>
+<rect class="b-alt" x="188" y="172" width="156" height="60"/>
+<text class="t" x="198" y="196">Local copy kept</text>
+<text class="ts" x="198" y="216">fix the drive</text>
+<line class="a-a" x1="618.0" y1="112" x2="618.0" y2="170" marker-end="url(#f9a)"/>
+<text class="al-a" x="625.0" y="146">keep emails</text>
+<rect class="b-alt" x="540" y="172" width="156" height="60"/>
+<text class="t" x="550" y="196">Tamper check</text>
+<text class="ts" x="550" y="216">code must match app</text>
+</svg></div></figure>
+</div>
+<div class="flow" id="f10">
+<h3>Internet outage <span class="tag ready">in the software now</span></h3>
+<p>Everything that matters runs on the PC. Only remote viewing and outgoing messages wait for the internet.</p>
+<figure><div class="scroll"><svg viewBox="0 0 884 250" role="img" aria-label="Internet outage: Internet down → Weighing goes on → Messages wait → Internet back → Outbox catches up">
+<defs>
+<marker id="f10m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="f10b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk-b" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="f10a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk-a" d="M0,0 L10,5 L0,10 z"/></marker>
+</defs>
+<rect class="b" x="12" y="16" width="156" height="96"/>
+<text class="tn" x="24" y="34">1</text>
+<text class="t" x="24" y="56">Internet down</text>
+<text class="ts" x="24" y="76"></text>
+<text class="ts" x="24" y="94"></text>
+<line class="a" x1="168" y1="64.0" x2="186" y2="64.0" marker-end="url(#f10m)"/>
+<rect class="b-own" x="188" y="16" width="156" height="96"/>
+<text class="tn" x="200" y="34">2</text>
+<text class="t" x="200" y="56">Weighing goes on</text>
+<text class="ts" x="200" y="76">local app + database</text>
+<text class="ts" x="200" y="94"></text>
+<line class="a" x1="344" y1="64.0" x2="362" y2="64.0" marker-end="url(#f10m)"/>
+<rect class="b" x="364" y="16" width="156" height="96"/>
+<text class="tn" x="376" y="34">3</text>
+<text class="t" x="376" y="56">Messages wait</text>
+<text class="ts" x="376" y="76">in the outbox</text>
+<text class="ts" x="376" y="94"></text>
+<line class="a" x1="520" y1="64.0" x2="538" y2="64.0" marker-end="url(#f10m)"/>
+<rect class="b" x="540" y="16" width="156" height="96"/>
+<text class="tn" x="552" y="34">4</text>
+<text class="t" x="552" y="56">Internet back</text>
+<text class="ts" x="552" y="76"></text>
+<text class="ts" x="552" y="94"></text>
+<line class="a" x1="696" y1="64.0" x2="714" y2="64.0" marker-end="url(#f10m)"/>
+<rect class="b" x="716" y="16" width="156" height="96"/>
+<text class="tn" x="728" y="34">5</text>
+<text class="t" x="728" y="56">Outbox catches up</text>
+<text class="ts" x="728" y="76">retries send all</text>
+<text class="ts" x="728" y="94"></text>
+<line class="a-b" x1="266.0" y1="112" x2="266.0" y2="170" marker-end="url(#f10b)"/>
+<text class="al-b" x="273.0" y="146">power cut</text>
+<rect class="b-hold" x="188" y="172" width="156" height="60"/>
+<text class="t" x="198" y="196">UPS carries the PC</text>
+<text class="ts" x="198" y="216">DB is crash-safe (WAL)</text>
+</svg></div></figure>
+</div>
+<div class="flow" id="f11">
+<h3>Site to cloud sync <span class="tag new">Stage 2 · needs new code</span></h3>
+<p>Stage 2 only. Needs new code (Phase 3). The site PC pushes each closed ticket out to the cloud; nothing on the internet can connect into the site.</p>
+<figure><div class="scroll"><svg viewBox="0 0 884 250" role="img" aria-label="Site to cloud sync: Ticket closes → Sync agent → Mutual TLS → Cloud stores copy → Owner dashboard">
+<defs>
+<marker id="f11m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="f11b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk-b" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="f11a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk-a" d="M0,0 L10,5 L0,10 z"/></marker>
+</defs>
+<rect class="b" x="12" y="16" width="156" height="96"/>
+<text class="tn" x="24" y="34">1</text>
+<text class="t" x="24" y="56">Ticket closes</text>
+<text class="ts" x="24" y="76">on the site PC</text>
+<text class="ts" x="24" y="94"></text>
+<line class="a" x1="168" y1="64.0" x2="186" y2="64.0" marker-end="url(#f11m)"/>
+<rect class="b" x="188" y="16" width="156" height="96"/>
+<text class="tn" x="200" y="34">2</text>
+<text class="t" x="200" y="56">Sync agent</text>
+<text class="ts" x="200" y="76">outbound HTTPS only</text>
+<text class="ts" x="200" y="94"></text>
+<line class="a" x1="344" y1="64.0" x2="362" y2="64.0" marker-end="url(#f11m)"/>
+<rect class="b" x="364" y="16" width="156" height="96"/>
+<text class="tn" x="376" y="34">3</text>
+<text class="t" x="376" y="56">Mutual TLS</text>
+<text class="ts" x="376" y="76">site certificate</text>
+<text class="ts" x="376" y="94">checked by cloud</text>
+<line class="a" x1="520" y1="64.0" x2="538" y2="64.0" marker-end="url(#f11m)"/>
+<rect class="b-own" x="540" y="16" width="156" height="96"/>
+<text class="tn" x="552" y="34">4</text>
+<text class="t" x="552" y="56">Cloud stores copy</text>
+<text class="ts" x="552" y="76">no duplicates</text>
+<text class="ts" x="552" y="94"></text>
+<line class="a" x1="696" y1="64.0" x2="714" y2="64.0" marker-end="url(#f11m)"/>
+<rect class="b" x="716" y="16" width="156" height="96"/>
+<text class="tn" x="728" y="34">5</text>
+<text class="t" x="728" y="56">Owner dashboard</text>
+<text class="ts" x="728" y="76">any browser, 2-step</text>
+<text class="ts" x="728" y="94"></text>
+<line class="a-a" x1="266.0" y1="112" x2="266.0" y2="170" marker-end="url(#f11a)"/>
+<text class="al-a" x="273.0" y="146">offline</text>
+<rect class="b-alt" x="188" y="172" width="156" height="60"/>
+<text class="t" x="198" y="196">Queued on site</text>
+<text class="ts" x="198" y="216">sends when back</text>
+</svg></div></figure>
+</div>
+  </div>
+</section>
+
+<!-- 04 -->
+<section id="hardware">
+  <div class="eyebrow">04 · Hardware</div>
+  <h2>Hardware you need</h2>
+  <p>Prices are approximate September 2026 retail, excluding GST. If you already own a PC or printer that meets the minimum, reuse it.</p>
+  <div class="tbl wide">
+    <table>
+      <thead><tr><th>Item</th><th>Minimum</th><th>Recommended</th><th>Why</th><th class="num">Approx. ₹</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Weighbridge PC</strong></td><td>i3, 8 GB RAM, 256 GB SSD, Windows 10 Pro</td><td>i5, 16 GB, 512 GB SSD, <strong>Windows 11 Pro</strong></td><td>Pro edition gives BitLocker disk encryption. An SSD makes the database safer and faster.</td><td class="num">45,000–60,000</td></tr>
+        <tr><td><strong>Serial connection</strong></td><td>USB-to-RS-232 adapter, FTDI chipset</td><td>PC with a built-in COM port, or FTDI adapter</td><td>Cheap Prolific clones drop out on Windows 11. RS-232 cable up to about 15 m.</td><td class="num">800–1,500</td></tr>
+        <tr><td><strong>Cable to indicator</strong></td><td>DB9 serial cable</td><td>Keep a straight and a null-modem (crossed) cable</td><td>Indicators differ in which pins send and receive. Having both saves a site visit.</td><td class="num">300–600</td></tr>
+        <tr><td><strong>Online UPS</strong></td><td>1 kVA, 30 min</td><td>2 kVA, 60 min, plus generator changeover</td><td>A power cut mid-weighment must not switch off the PC or the indicator.</td><td class="num">12,000–25,000</td></tr>
+        <tr><td><strong>Ticket printer</strong></td><td>Any A4/A5 laser or inkjet</td><td>Mono laser (A5 landscape, 2 copies per ticket)</td><td>The print page is laid out for A5. Dot matrix with continuous stationery also works.</td><td class="num">10,000–18,000</td></tr>
+        <tr><td><strong>Internet</strong></td><td>Broadband</td><td>Broadband + 4G/5G backup router</td><td>Only messages and remote viewing need it. Weighing works without it.</td><td class="num">3,000–5,000</td></tr>
+        <tr><td><strong>Backup drive</strong></td><td>64 GB USB stick</td><td>1 TB USB drive, kept in the office</td><td>A second copy of the daily backup away from the PC's own disk.</td><td class="num">1,000–5,000</td></tr>
+        <tr><td><strong>Surge and earthing</strong></td><td>Spike guard</td><td>Earthed socket, surge protector on the serial and network cables</td><td>Lightning around the weighbridge is the most common cause of dead ports.</td><td class="num">1,500–4,000</td></tr>
+        <tr><td><strong>Driver display</strong> <span class="tag">optional</span></td><td>n/a</td><td>Second monitor facing the window</td><td>Lets the driver see the weight being taken.</td><td class="num">6,000–8,000</td></tr>
+        <tr><td><strong>Owner phone</strong></td><td>Any smartphone</td><td>n/a</td><td>Authenticator app for two-step login; Tailscale app for remote view.</td><td class="num">existing</td></tr>
+        <tr><td><strong>Cameras, RFID, boom barrier</strong> <span class="tag new">Phase 4</span></td><td colspan="3">Not needed now. When wanted: 2 number-plate cameras, 1 top camera, UHF RFID reader, boom barrier, I/O module. See the earlier build plan for specs.</td><td class="num">6–12 L</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 05 -->
+<section id="software">
+  <div class="eyebrow">05 · Software</div>
+  <h2>Software and accounts you need</h2>
+  <div class="tbl mid">
+    <table>
+      <thead><tr><th>Software or account</th><th>For</th><th>Cost</th><th>When</th></tr></thead>
+      <tbody>
+        <tr><td>Windows 10/11 Pro</td><td>The weighbridge PC, with BitLocker switched on</td><td>Comes with the PC</td><td>Stage 1</td></tr>
+        <tr><td>Python 3.12 (python.org)</td><td>Runs the weighbridge app; <code>start.bat</code> installs the rest</td><td>Free</td><td>Stage 1</td></tr>
+        <tr><td>Chrome or Edge</td><td>Operator screen, printing</td><td>Free</td><td>Stage 1</td></tr>
+        <tr><td>Google Authenticator / Microsoft Authenticator</td><td>Two-step login for owner and admins</td><td>Free</td><td>Stage 1</td></tr>
+        <tr><td>TallyPrime (Silver or Gold)</td><td>Receiving bills as vouchers</td><td>Usually already owned; Silver about ₹22,500 + GST if not</td><td>Stage 1</td></tr>
+        <tr><td>Gmail with 2-Step Verification, or Google Workspace</td><td>Sending tickets and the daily summary</td><td>Free, or about ₹150–300 per user a month</td><td>Stage 1</td></tr>
+        <tr><td>Google Drive for desktop or OneDrive</td><td>Offsite copy of daily backups</td><td>Free up to 15 GB / 5 GB</td><td>Stage 1</td></tr>
+        <tr><td>Tailscale (free plan)</td><td>Owner's remote view without opening ports</td><td>Free for a few users</td><td>Stage 1</td></tr>
+        <tr><td>Meta Business account + WhatsApp Business Platform</td><td>Ticket image on WhatsApp</td><td>Per message, see integrations</td><td>When approved</td></tr>
+        <tr><td>DLT registration + SMS provider</td><td>SMS tickets</td><td>One-time registration + per SMS</td><td>When approved</td></tr>
+        <tr><td>Cloud server (Ubuntu 24.04), domain name, Caddy for HTTPS</td><td>Stage 2 dashboard and sync</td><td>₹1–2.5k a month + ₹800–1,200 a year for the domain</td><td>Stage 2</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 06 -->
+<section id="integrations">
+  <div class="eyebrow">06 · Integrations</div>
+  <h2>What each integration needs</h2>
+  <p>Each one is switched on in <code>config.toml</code> and takes effect after restarting the app. Start with the indicator and printer. The others can go live one at a time as their approvals come through.</p>
+  <div class="int">
+
+    <div class="card">
+      <h3>Weight indicator <span class="tag ready">ready</span></h3>
+      <dl>
+        <dt>You need</dt><dd>The indicator's serial (DB9) port set to <strong>continuous</strong> output; a USB-to-serial adapter; a DB9 cable (try straight first, then null-modem). If the output setting is under the Legal Metrology seal, ask the maker's engineer to set it.</dd>
+        <dt>Steps</dt><dd><ol>
+          <li>Connect; note the COM number in Device Manager → Ports.</li>
+          <li>With a load on the platform, run <code>python -m weighbridge sniff --port COM3</code>. It tries 9600, 4800, 2400, 19200 and 1200 baud and prints the weights it finds.</li>
+          <li>Set <code>[indicator] source = "serial"</code>, <code>port</code>, <code>baudrate</code>, and <code>multiplier = 1000</code> if it sends tonnes.</li>
+          <li>From the stamping certificate: <code>capacity_kg</code> = Max, <code>stable_tolerance_kg</code> = scale interval (e).</li>
+        </ol></dd>
+        <dt>Test</dt><dd>Compare the screen with the indicator display for five trucks. Pull the cable: within a few seconds the screen must show "No signal" and refuse to capture.</dd>
+        <dt>Common problems</dt><dd>Nothing received → wrong COM port, cable pins, or output not set to continuous. Wrong numbers → send me the raw line from <code>sniff</code> and I'll write the exact pattern.</dd>
+        <dt>Cost / time</dt><dd>₹1–2k · half a day</dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h3>Ticket printer <span class="tag ready">ready</span></h3>
+      <dl>
+        <dt>You need</dt><dd>A printer installed in Windows and set as default in Chrome/Edge.</dd>
+        <dt>Steps</dt><dd>Open a closed ticket → Print ticket → choose A5 landscape (or A4) → turn off "Headers and footers" → save as the browser's default.</dd>
+        <dt>Test</dt><dd>Both copies (customer and office) print, with the net weight in large type.</dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h3>WhatsApp: ticket image to party and truck owner <span class="tag ready">ready</span></h3>
+      <dl>
+        <dt>You need</dt><dd><ol>
+          <li>A Meta Business account (business.facebook.com), verified with GST or Udyam certificate and business address.</li>
+          <li>A phone number for the business that is <strong>not</strong> already on the WhatsApp app (a new SIM or landline that can receive an OTP call).</li>
+          <li>In WhatsApp Manager: add the number, get its <strong>Phone number ID</strong>, and get the display name approved.</li>
+          <li>A System User with WhatsApp messaging permission and a <strong>permanent access token</strong>.</li>
+          <li>A message template named <code>weighbridge_ticket</code>, category Utility, language English, with an <strong>image header</strong> and body text with 3 variables, e.g. "Weighment ticket {{1}} for vehicle {{2}}: net {{3}} MT."</li>
+          <li>A payment method in Meta Business settings.</li>
+        </ol></dd>
+        <dt>config.toml</dt><dd><code>[whatsapp] enabled = true, phone_number_id, access_token, mode = "template", template_name, template_language</code>. On each party fill in WhatsApp; on each vehicle the owner's WhatsApp.</dd>
+        <dt>Why a template</dt><dd>Meta only allows businesses to message someone freely within 24 hours of that person writing to you. Tickets go to people who haven't written, so an approved template is required.</dd>
+        <dt>Cost / time</dt><dd>Utility messages cost roughly ₹0.1–0.2 each in India (check Meta's current rate card). Verification takes 2–10 days; template approval minutes to 2 days. New numbers start with a low daily limit that rises with verification and good quality.</dd>
+        <dt>Easier route</dt><dd>A WhatsApp provider (AiSensy, Interakt, Gupshup) handles sign-up for about ₹1–3k a month. That needs a small code change to use their API. Ask me if you go this way.</dd>
+        <dt>Test</dt><dd>Add your own number to a test party, close a ticket, and check the System page outbox shows "sent".</dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h3>SMS <span class="tag ready">ready</span></h3>
+      <dl>
+        <dt>You need</dt><dd><ol>
+          <li><strong>DLT registration</strong> of the business as a Principal Entity on one operator portal (Jio TrueConnect, Airtel or Vi). PAN, GST certificate and an authorisation letter. One-time fee roughly ₹5–6k.</li>
+          <li>A 6-letter <strong>sender ID</strong> (header), e.g. SBAWBR, approved on DLT.</li>
+          <li>A <strong>content template</strong> approved on DLT, e.g. "Ticket {#var#} Vehicle {#var#} Net {#var#} MT on {#var#} - Shri Balaji Associates".</li>
+          <li>An account with an SMS provider (MSG91, Fast2SMS, Textlocal, etc.) linked to your DLT entity ID and template ID.</li>
+        </ol></dd>
+        <dt>config.toml</dt><dd><code>[sms] enabled, method, url, api_key, sender, template_id, template</code>. The <code>template</code> text must produce exactly the DLT-approved wording once the values are filled in, or operators block the message.</dd>
+        <dt>Cost / time</dt><dd>About ₹0.15–0.25 per SMS in packs · 1–2 weeks for DLT approvals.</dd>
+        <dt>Test</dt><dd>Send to your own mobile; a DLT mismatch shows as an error in the outbox.</dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h3>Email: ticket to party, daily summary to owner <span class="tag ready">ready</span></h3>
+      <dl>
+        <dt>You need</dt><dd>A Gmail account with 2-Step Verification on, and an <strong>App password</strong> (Google Account → Security → App passwords). Never use the main password. For your own domain (e.g. @balajiassociates.in), use Google Workspace or your host's SMTP and set SPF, DKIM and DMARC so mail isn't marked as spam.</dd>
+        <dt>config.toml</dt><dd><code>[email] enabled = true, host = "smtp.gmail.com", port = 587, starttls = true, username, password, from_addr</code> and <code>[notify] owner_email</code>.</dd>
+        <dt>Limits</dt><dd>Gmail about 500 recipients a day, Workspace about 2,000. That's enough for a few hundred tickets a day.</dd>
+        <dt>Cost / time</dt><dd>Free (Gmail) · 15 minutes</dd>
+        <dt>Test</dt><dd>Close a ticket for a party with your email. After 20:00 check the daily summary arrives with the audit chain code.</dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h3>Tally Prime <span class="tag ready">ready</span></h3>
+      <dl>
+        <dt>You need</dt><dd><ol>
+          <li>TallyPrime on the weighbridge PC or an office PC on the same network.</li>
+          <li>In Tally: F1 Help → Settings → Connectivity → TallyPrime acts as <strong>Both</strong>, port <strong>9000</strong>. The company must be open when bills are sent.</li>
+          <li>Ledgers with the exact names in <code>[tally]</code>: a sales ledger (e.g. "Sales - Boulder"), a purchase ledger (e.g. "Mining Contract Charges"), Output and Input CGST, SGST and IGST.</li>
+          <li>A ledger for each party with the same name as in the app, or fill "Tally ledger name" on the party.</li>
+        </ol></dd>
+        <dt>config.toml</dt><dd><code>[tally] enabled = true, url, company</code> and the ledger names. If Tally is on another PC, <code>url = "http://&lt;that PC's IP&gt;:9000"</code>.</dd>
+        <dt>Security</dt><dd>Tally's port 9000 has no password. Allow it only from the weighbridge PC in Windows Firewall on the Tally PC. Never open it to the internet.</dd>
+        <dt>Without a connection</dt><dd>Use Tally XML on each bill and import it in Tally (Import → Transactions). Every bill shows when it was sent or downloaded, to avoid double entry.</dd>
+        <dt>Test</dt><dd>Send one bill to a test company in Tally first and check the voucher type, amounts and GST split.</dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h3>Backups <span class="tag ready">ready</span></h3>
+      <dl>
+        <dt>You need</dt><dd>A USB drive, or Google Drive for desktop / OneDrive installed, giving a folder like <code>G:\My Drive\WB-Backup</code>.</dd>
+        <dt>config.toml</dt><dd><code>[backup] extra_dir = "G:\\My Drive\\WB-Backup"</code>, <code>keep = 30</code>.</dd>
+        <dt>Routine</dt><dd>Automatic once a day. The owner presses "Back up now" on the System page at shift end. Once a month, restore a backup on a spare PC to prove it works.</dd>
+        <dt>Restore</dt><dd>Stop the app, copy the chosen <code>weighbridge-YYYYMMDD-HHMMSS.db</code> to <code>data\weighbridge.db</code>, start the app, open Audit and check "Chain intact".</dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h3>Remote view for the owner (Stage 1) <span class="tag ready">ready</span></h3>
+      <dl>
+        <dt>You need</dt><dd>A Tailscale account (sign in with Google, with 2-step on). The Tailscale app on the weighbridge PC and on the owner's phone.</dd>
+        <dt>Steps</dt><dd>On the PC, run <code>tailscale serve --bg 8080</code>. The app then opens on the owner's phone at <code>https://&lt;pc-name&gt;.&lt;tailnet&gt;.ts.net</code>, encrypted and visible only to your own Tailscale devices. The app itself keeps listening only on 127.0.0.1.</dd>
+        <dt>Rule</dt><dd>Don't use AnyDesk or TeamViewer for this, and never forward port 8080 on the router.</dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h3>Cloud server and sync (Stage 2) <span class="tag new">needs new code</span></h3>
+      <dl>
+        <dt>You need</dt><dd>A 2 vCPU / 4 GB Ubuntu 24.04 server in Mumbai, Bangalore or Pune (DigitalOcean, AWS Lightsail or Azure); a domain name; encrypted object storage for backups.</dd>
+        <dt>I build</dt><dd>A sync agent on the site PC that pushes closed tickets and bills outward over HTTPS with a site certificate (mutual TLS), queuing when offline. A cloud copy of the app for reports, billing and the owner dashboard, with the same logins and two-step login. HTTPS via Caddy, firewall, automatic security updates.</dd>
+        <dt>Cost / time</dt><dd>₹1.5–4k a month · about 2–3 weeks of work, then a security test.</dd>
+      </dl>
+    </div>
+
+  </div>
+</section>
+
+<!-- 07 -->
+<section id="security">
+  <div class="eyebrow">07 · Security</div>
+  <h2>Security in each setup</h2>
+  <div class="two">
+    <div class="card">
+      <h3>Already in the software</h3>
+      <ul>
+        <li>One login per person, five roles, owner-only user management.</li>
+        <li>Two-step login (authenticator app), compulsory for the owner/admin role.</li>
+        <li>Lockout for 15 minutes after 5 wrong passwords. Passwords stored as scrypt hashes.</li>
+        <li>Office sessions end after 30 minutes idle, all sessions after 12 hours.</li>
+        <li>Protection against forged form submissions (CSRF) and strict browser security headers.</li>
+        <li>No weight can be typed except by a supervisor with a reason. The ticket is flagged.</li>
+        <li>Weights of closed tickets, and the audit log, are locked in the database itself.</li>
+        <li>A hash-chained audit log that reports any tampering. The chain code goes out in the daily email.</li>
+        <li>Excel downloads can't carry spreadsheet formulas typed into the app.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>What you add per setup</h3>
+      <ul>
+        <li><strong>Stage 1:</strong> BitLocker on; Windows login password with no auto-login; <code>config.toml</code> readable only by the app's Windows account; Windows Update on; no remote-desktop tools left running; backups leaving the PC.</li>
+        <li><strong>Office PCs on the LAN</strong> <span class="tag new">Phase 2</span>: I add HTTPS first, then set <code>server.host</code> to the PC's address and allow only office PCs in Windows Firewall.</li>
+        <li><strong>Stage 2 cloud:</strong> HTTPS only, two-step login for every cloud user, firewall allowing only 443, automatic updates, encrypted backups with object lock, and a CERT-In empanelled security test before go-live.</li>
+        <li><strong>Personal data (DPDP Act 2023):</strong> drivers' names and numbers are personal data. Put a notice at the gate, use them only for tickets and billing, and don't share exports outside the business.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 08 -->
+<section id="rollout">
+  <div class="eyebrow">08 · Rollout</div>
+  <h2>Rollout plan, week by week</h2>
+  <ol class="steps">
+    <li><div><h3>Set up the PC <span class="when">week 1, day 1–2</span></h3>
+      <ul><li>Windows 11 Pro, BitLocker, UPS, printer, Python 3.12, copy the software, run <code>start.bat</code>, fill <code>[company]</code>.</li>
+      <li>Create the owner login with <code>python -m weighbridge init</code>; set up two-step login.</li>
+      <li>Auto-start with Windows through Task Scheduler (README section 6).</li></ul></div></li>
+    <li><div><h3>Connect the indicator <span class="when">week 1, day 2–3</span></h3>
+      <ul><li>Run <code>sniff</code>, set the serial settings, capacity and scale interval. Check five trucks against the display.</li></ul></div></li>
+    <li><div><h3>Masters and users <span class="when">week 1</span></h3>
+      <ul><li>Parties with ₹/MT rates and GSTINs, materials, one account per operator, supervisor and accountant.</li>
+      <li>Train operators on the simulator: capture, second weighment, stored tare, what the flags mean.</li></ul></div></li>
+    <li><div><h3>Start the registrations <span class="when">week 1, in parallel</span></h3>
+      <ul><li>Meta Business verification and the WhatsApp template; DLT entity, sender ID and template; Gmail app password.</li></ul></div></li>
+    <li><div><h3>Parallel run <span class="when">week 2</span></h3>
+      <ul><li>Keep the manual register for one week alongside the software. Reconcile trips and tonnes daily. Tune the stability and tare tolerance if needed.</li>
+      <li>Take a tare for every regular truck with "Record tare only".</li></ul></div></li>
+    <li><div><h3>Email, backups and Tally live <span class="when">weeks 2–3</span></h3>
+      <ul><li>Backup copy to USB and Drive; first restore drill. Daily summary email to the owner.</li>
+      <li>First month-end bill to a Tally test company, then to the real company.</li></ul></div></li>
+    <li><div><h3>WhatsApp and SMS live <span class="when">weeks 2–4, as approvals arrive</span></h3>
+      <ul><li>Test with your own number, then turn them on for everyone.</li></ul></div></li>
+    <li><div><h3>Remote view <span class="when">week 3</span></h3>
+      <ul><li>Tailscale on the PC and the owner's phone.</li></ul></div></li>
+    <li><div><h3>Later <span class="when">when you decide</span></h3>
+      <ul><li>Stage 2 cloud server (Phase 3); cameras and RFID (Phase 4).</li></ul></div></li>
+  </ol>
+</section>
+
+<!-- 09 -->
+<section id="costs">
+  <div class="eyebrow">09 · Costs</div>
+  <h2>What it costs</h2>
+  <div class="tbl mid">
+    <table>
+      <thead><tr><th>Item</th><th class="num">Stage 1 in-house</th><th class="num">Stage 2 hybrid</th></tr></thead>
+      <tbody>
+        <tr><td>PC, UPS, printer, adapters, router, backup drive, surge protection</td><td class="num">₹75k–1.2L one-time<br><span class="muted small">₹10–25k if you reuse a PC and printer</span></td><td class="num">same</td></tr>
+        <tr><td>DLT registration for SMS</td><td class="num">₹5–6k one-time</td><td class="num">same</td></tr>
+        <tr><td>Software licences</td><td class="num">₹0 (Tally if not owned)</td><td class="num">₹0</td></tr>
+        <tr><td>Internet: broadband + 4G backup</td><td class="num">₹900–1,300 / month</td><td class="num">same</td></tr>
+        <tr><td>WhatsApp at ~300 tickets/day, 1–2 recipients</td><td class="num">≈ ₹1–4k / month</td><td class="num">same</td></tr>
+        <tr><td>SMS at the same volume (if used as well)</td><td class="num">≈ ₹1.5–4.5k / month</td><td class="num">same</td></tr>
+        <tr><td>Email, Tailscale, Drive backup</td><td class="num">₹0</td><td class="num">₹0</td></tr>
+        <tr><td>Cloud server, domain, backup storage</td><td class="num">n/a</td><td class="num">₹1.5–4k / month</td></tr>
+        <tr><td>Security test before cloud go-live</td><td class="num">n/a</td><td class="num">₹50k–1.5L one-time</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="muted small">Message costs depend on how many tickets you close and how many people each goes to. WhatsApp and SMS rates change; check the current rate cards before budgeting.</p>
+</section>
+
+<!-- 10 -->
+<section id="next">
+  <div class="eyebrow">10 · Later phases</div>
+  <h2>What would need new code</h2>
+  <div class="tbl mid">
+    <table>
+      <thead><tr><th>Phase</th><th>What it adds</th><th>Needs from you</th><th>My build time</th></tr></thead>
+      <tbody>
+        <tr><td><strong>2 · Office access</strong></td><td>HTTPS on the app so office PCs on the LAN can use it safely</td><td>Office PC addresses</td><td>2–3 days</td></tr>
+        <tr><td><strong>3 · Cloud</strong></td><td>Sync agent, cloud reports, billing and owner dashboard, multi-site ready</td><td>Cloud account, domain</td><td>2–3 weeks</td></tr>
+        <tr><td><strong>4a · Truck photos</strong></td><td>Photo from an IP camera saved with every weighment and printed on the ticket</td><td>1–2 IP cameras with ONVIF</td><td>about 1 week</td></tr>
+        <tr><td><strong>4b · Automation</strong></td><td>RFID tag and number-plate check, boom barrier and traffic lights, unattended weighing</td><td>RFID reader, cameras, boom, I/O module</td><td>2–3 weeks + site testing</td></tr>
+        <tr><td><strong>WhatsApp provider</strong></td><td>Support for AiSensy / Interakt / Gupshup instead of Meta direct</td><td>Provider account and API docs</td><td>1–2 days</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+</main>
+</div>
+<footer>Prepared 24 September 2026 for Shri Balaji Associates, Chandrapur. Behaviour described matches the weighbridge software on branch claude/affectionate-lovelace-a2jgee; defaults come from config.example.toml. Prices are planning estimates to confirm with vendors.</footer>
+</div>

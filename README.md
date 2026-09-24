@@ -120,4 +120,4 @@ python -m weighbridge run   # uses the simulator by default
 Code map: `weighbridge/indicator.py` (serial/TCP reader, stability), `services/weighing.py` (tickets),
 `services/billing.py`, `services/tally.py`, `services/notify.py` (outbox + senders),
 `services/reports.py` (Excel), `audit.py` (hash chain), `security.py` (passwords, TOTP), `web/app.py` (routes).
-The in-house build plan is in `docs/weighbridge-inhouse-plan.html`.
+The in-house build plan is in `docs/weighbridge-inhouse-plan.html`; the operating plan (flows, hardware, cloud vs in-house, integration requirements) is in `docs/weighbridge-software-plan.html`.
