@@ -218,6 +218,7 @@ td.good{color:var(--good);font-weight:600} td.bad{color:var(--bad);font-weight:6
     <dt>Monthly infra</dt><dd>₹0 (Stage 1)</dd>
     <dt>Cloud add-on</dt><dd>₹1.5–4k/mo</dd>
     <dt>Go-live</dt><dd>~2–4 weeks</dd>
+    <dt>Phase 4 hardware</dt><dd>≈ ₹3.4–6.9 L</dd>
   </dl>
 </header>
 <div class="hazard" aria-hidden="true"></div>
@@ -227,8 +228,10 @@ td.good{color:var(--good);font-weight:600} td.bad{color:var(--bad);font-weight:6
   <ol>
     <li><a href="#status">Where things stand</a></li>
     <li><a href="#host">Cloud or in-house</a></li>
+    <li><a href="#access">Access and connections</a></li>
     <li><a href="#flows">All the flows</a></li>
     <li><a href="#hardware">Hardware</a></li>
+    <li><a href="#phase4">Cameras and RFID</a></li>
     <li><a href="#software">Software</a></li>
     <li><a href="#integrations">Integrations</a></li>
     <li><a href="#security">Security</a></li>
@@ -368,9 +371,166 @@ td.good{color:var(--good);font-weight:600} td.bad{color:var(--bad);font-weight:6
   </div>
 </section>
 
+<!-- ACCESS -->
+<section id="access">
+  <div class="eyebrow">03 · Access</div>
+  <h2>How to open the software, and how everything connects</h2>
+  <p>The software runs on the weighbridge PC and you use it in a web browser. There is nothing to install on other computers or phones except the Tailscale app for remote access.</p>
+  <div class="tbl mid">
+    <table>
+      <thead><tr><th>Who</th><th>Where from</th><th>How to open it</th><th>Available</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Operator</strong></td><td>The weighbridge PC</td><td>Chrome or Edge at <code>http://127.0.0.1:8080</code>, pinned as a desktop shortcut. The app starts by itself with Windows.</td><td class="good">Now</td></tr>
+        <tr><td><strong>Supervisor, accountant</strong></td><td>The weighbridge PC</td><td>Same address, each with their own login. Log out when done so the next person can't act as you.</td><td class="good">Now</td></tr>
+        <tr><td><strong>Owner, away from site</strong></td><td>Phone or laptop, anywhere</td><td>Open the Tailscale app (signed in), then <code>https://&lt;pc-name&gt;.&lt;your-tailnet&gt;.ts.net</code>. The weighbridge PC must be on.</td><td class="good">Now, after Tailscale setup</td></tr>
+        <tr><td><strong>Office PC on the same network</strong></td><td>Site office</td><td><code>https://&lt;pc-name&gt;:8443</code> once I add HTTPS for the local network. Until then, use the weighbridge PC or Tailscale.</td><td><span class="tag new">Phase 2</span></td></tr>
+        <tr><td><strong>Anyone with access, any time</strong></td><td>Any browser</td><td><code>https://wb.&lt;yourdomain&gt;.in</code> on the cloud server, even when the site PC is off.</td><td><span class="tag new">Stage 2</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="two">
+    <div class="card">
+      <h3>Logging in</h3>
+      <ol class="small">
+        <li>Type your username and password.</li>
+        <li>If two-step login is on (always for the owner), open the authenticator app on your phone and type the 6-digit code.</li>
+        <li>First time only: set your own password (at least 12 characters).</li>
+        <li>You land on your page: Weigh for operators, Billing for accounts, Reports for the owner.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h3>When something goes wrong</h3>
+      <ul class="small">
+        <li><strong>Forgot password:</strong> the owner resets it on the Users page. You set a new one at next login.</li>
+        <li><strong>Lost phone:</strong> the owner presses "Reset 2-step" for you, then you scan a new code.</li>
+        <li><strong>"Locked for a few minutes":</strong> 5 wrong passwords. Wait 15 minutes or ask the owner to re-enable you.</li>
+        <li><strong>Owner locked out:</strong> on the PC run <code>python -m weighbridge add-user</code> to create a new admin, then fix the old account.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>How the pieces connect</h3>
+  <p>The weighbridge PC sits on two separate networks. Its main port joins the office network and the internet. A second, cheap USB network adapter (about ₹1–1.5k) joins a small PoE switch that only the cameras, RFID reader and relay module are on. That device network has no router, so the cameras can't reach the internet and nobody outside can reach them. Today only the indicator and printer are connected; the rest arrives with Phase 4.</p>
+  <figure class="big">
+    <div class="scroll"><svg viewBox="0 0 1100 470" role="img" aria-label="Connection diagram: cameras and RFID reader on a separate device network through a PoE switch to a second network adapter on the site PC; the relay module drives traffic lights and hooter; the PC's main port goes to the office router and internet.">
+<defs>
+<marker id="cm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker>
+</defs>
+<rect class="z" x="16" y="16" width="280" height="438"/>
+<text class="zt" x="32" y="40">Yard · on poles</text>
+<rect class="b" x="40" y="60" width="170" height="44"/><text class="t" x="125" y="80" text-anchor="middle">Plate camera, entry</text><text class="ts" x="125" y="96" text-anchor="middle">192.168.50.21 · 4b</text>
+<rect class="b" x="40" y="116" width="170" height="44"/><text class="t" x="125" y="136" text-anchor="middle">Plate camera, exit</text><text class="ts" x="125" y="152" text-anchor="middle">192.168.50.22 · 4b</text>
+<rect class="b" x="40" y="172" width="170" height="44"/><text class="t" x="125" y="192" text-anchor="middle">Top camera</text><text class="ts" x="125" y="208" text-anchor="middle">192.168.50.23 · 4a</text>
+<rect class="b" x="40" y="240" width="170" height="44"/><text class="t" x="125" y="260" text-anchor="middle">RFID antennas ×2</text><text class="ts" x="125" y="276" text-anchor="middle">facing windscreens · 4b</text>
+<rect class="b" x="40" y="320" width="170" height="44"/><text class="t" x="125" y="340" text-anchor="middle">Traffic lights ×2</text><text class="ts" x="125" y="356" text-anchor="middle">red / green · 4b</text>
+<rect class="b" x="40" y="380" width="170" height="44"/><text class="t" x="125" y="400" text-anchor="middle">Hooter</text><text class="ts" x="125" y="416" text-anchor="middle">100 dB · 4b</text>
+
+<rect class="z" x="312" y="16" width="488" height="438"/>
+<text class="zt" x="328" y="40">Control room</text>
+<rect class="b" x="456" y="84" width="150" height="76"/><text class="t" x="531" y="108" text-anchor="middle">PoE switch</text><text class="ts" x="531" y="126" text-anchor="middle">device network</text><text class="ts" x="531" y="142" text-anchor="middle">no internet</text>
+<rect class="b" x="456" y="218" width="150" height="44"/><text class="t" x="531" y="238" text-anchor="middle">RFID reader</text><text class="ts" x="531" y="254" text-anchor="middle">192.168.50.31 · LLRP</text>
+<rect class="b" x="456" y="300" width="150" height="56"/><text class="t" x="531" y="322" text-anchor="middle">Relay module</text><text class="ts" x="531" y="340" text-anchor="middle">192.168.50.41 · Modbus</text>
+<rect class="b-buy" x="456" y="396" width="150" height="44"/><text class="t" x="531" y="416" text-anchor="middle">Weight indicator</text><text class="ts" x="531" y="432" text-anchor="middle">stamped, sealed</text>
+<rect class="b-own" x="640" y="84" width="150" height="250"/>
+<text class="t" x="715" y="108" text-anchor="middle">Weighbridge PC</text>
+<text class="ts" x="715" y="126" text-anchor="middle">app on 127.0.0.1:8080</text>
+<rect class="bi" x="652" y="140" width="126" height="40"/><text class="ts" x="715" y="157" text-anchor="middle">2nd network adapter</text><text class="ts" x="715" y="172" text-anchor="middle">192.168.50.10</text>
+<rect class="bi" x="652" y="188" width="126" height="40"/><text class="ts" x="715" y="205" text-anchor="middle">main network port</text><text class="ts" x="715" y="220" text-anchor="middle">office LAN (DHCP)</text>
+<rect class="bi" x="652" y="236" width="126" height="40"/><text class="ts" x="715" y="253" text-anchor="middle">USB-serial (COM3)</text><text class="ts" x="715" y="268" text-anchor="middle">indicator</text>
+<rect class="bi" x="652" y="284" width="126" height="40"/><text class="ts" x="715" y="301" text-anchor="middle">USB</text><text class="ts" x="715" y="316" text-anchor="middle">printer</text>
+<rect class="b" x="640" y="396" width="150" height="44"/><text class="t" x="715" y="416" text-anchor="middle">Ticket printer</text><text class="ts" x="715" y="432" text-anchor="middle">USB</text>
+
+<line class="a" x1="210" y1="82" x2="454" y2="104" marker-end="url(#cm)"/>
+<line class="a" x1="210" y1="138" x2="454" y2="122" marker-end="url(#cm)"/>
+<line class="a" x1="210" y1="194" x2="454" y2="140" marker-end="url(#cm)"/>
+<text class="al" x="330" y="86" text-anchor="middle">PoE cable</text>
+<line class="a" x1="210" y1="262" x2="454" y2="240" marker-end="url(#cm)"/><text class="al" x="330" y="244" text-anchor="middle">coax</text>
+<line class="a" x1="454" y1="318" x2="212" y2="342" marker-end="url(#cm)"/>
+<line class="a" x1="454" y1="340" x2="212" y2="400" marker-end="url(#cm)"/>
+<text class="al" x="330" y="316" text-anchor="middle">relay → contactor</text>
+<line class="a" x1="531" y1="218" x2="531" y2="162" marker-end="url(#cm)"/><text class="al" x="539" y="196">LAN</text>
+<polyline class="a" points="606,328 618,328 618,150 608,150" marker-end="url(#cm)"/>
+<line class="a" x1="606" y1="112" x2="650" y2="158" marker-end="url(#cm)"/>
+<polyline class="a" points="606,418 632,418 632,256 650,256" marker-end="url(#cm)"/>
+<text class="al" x="600" y="386" text-anchor="end">RS-232</text>
+<line class="a" x1="715" y1="334" x2="715" y2="394" marker-end="url(#cm)"/>
+
+<rect class="z" x="816" y="16" width="268" height="438"/>
+<text class="zt" x="832" y="40">Office · internet</text>
+<rect class="b" x="840" y="84" width="220" height="50"/><text class="t" x="950" y="105" text-anchor="middle">Router</text><text class="ts" x="950" y="122" text-anchor="middle">broadband + 4G backup</text>
+<rect class="b" x="840" y="170" width="220" height="44"/><text class="t" x="950" y="190" text-anchor="middle">Tally PC (optional)</text><text class="ts" x="950" y="206" text-anchor="middle">port 9000, weighbridge PC only</text>
+<rect class="b" x="840" y="240" width="220" height="44"/><text class="t" x="950" y="260" text-anchor="middle">Owner phone</text><text class="ts" x="950" y="276" text-anchor="middle">via Tailscale</text>
+<rect class="b" x="840" y="310" width="220" height="44"/><text class="t" x="950" y="330" text-anchor="middle">WhatsApp · SMS · email</text><text class="ts" x="950" y="346" text-anchor="middle">Drive backup copy</text>
+<polyline class="a" points="778,208 810,208 810,109 838,109" marker-end="url(#cm)"/>
+<line class="a" x1="950" y1="134" x2="950" y2="168" marker-end="url(#cm)"/>
+<polyline class="a" points="1060,109 1074,109 1074,332 1062,332" marker-end="url(#cm)"/>
+<line class="a" x1="1074" y1="262" x2="1062" y2="262" marker-start="url(#cm)"/>
+<text class="ts" x="840" y="392">Device network has no gateway:</text>
+<text class="ts" x="840" y="410">cameras, reader and relays can't</text>
+<text class="ts" x="840" y="428">reach the internet, and it can't reach them.</text>
+</svg></div>
+    <div class="legend">
+      <span><i class="sw buy"></i>Certified weighing equipment</span>
+      <span><i class="sw own"></i>Weighbridge PC running your software</span>
+      <span><i class="sw ots"></i>Off-the-shelf devices (4a / 4b marked on each)</span>
+    </div>
+    <figcaption>Only the weighbridge PC talks to the devices. The office side sees just the PC, and only through the app's login.</figcaption>
+  </figure>
+
+  <div class="two">
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Device network</th><th>Fixed address</th><th>Phase</th></tr></thead>
+        <tbody>
+          <tr><td>Weighbridge PC, 2nd adapter</td><td class="mono">192.168.50.10</td><td>4a</td></tr>
+          <tr><td>Plate camera, entry</td><td class="mono">192.168.50.21</td><td>4b</td></tr>
+          <tr><td>Plate camera, exit</td><td class="mono">192.168.50.22</td><td>4b</td></tr>
+          <tr><td>Top camera</td><td class="mono">192.168.50.23</td><td>4a</td></tr>
+          <tr><td>RFID reader</td><td class="mono">192.168.50.31</td><td>4b</td></tr>
+          <tr><td>Relay module (lights, hooter)</td><td class="mono">192.168.50.41</td><td>4b</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h3>Office network</h3>
+      <ul class="small">
+        <li>Whatever range your router uses (often 192.168.1.x).</li>
+        <li>In the router, reserve one address for the weighbridge PC so it never changes.</li>
+        <li>Tally PC, if separate: allow port 9000 only from the weighbridge PC's address.</li>
+        <li>Never forward any port on the router to the weighbridge PC. Remote access goes through Tailscale.</li>
+      </ul>
+    </div>
+  </div>
+
+  <ol class="steps">
+    <li><div><h3>Indicator <span class="when">now</span></h3><ul><li>Serial cable from the indicator to the USB-serial adapter. Note the COM number in Device Manager, run <code>sniff</code>, set <code>[indicator]</code> in config.toml.</li></ul></div></li>
+    <li><div><h3>Printer <span class="when">now</span></h3><ul><li>USB, install the Windows driver, print one ticket and save A5 as the browser default.</li></ul></div></li>
+    <li><div><h3>Office network and internet <span class="when">now</span></h3><ul><li>PC's main network port to the router. Reserve its address in the router.</li></ul></div></li>
+    <li><div><h3>Tailscale <span class="when">now</span></h3><ul><li>Install on the PC and the owner's phone, sign in to the same account with 2-step on, run <code>tailscale serve --bg 8080</code> on the PC.</li></ul></div></li>
+    <li><div><h3>Device network <span class="when">Phase 4a</span></h3><ul><li>Plug the USB network adapter into the PC and a cable to the PoE switch. In Windows, give the adapter <code>192.168.50.10</code>, mask <code>255.255.255.0</code>, and leave gateway and DNS <strong>empty</strong>.</li></ul></div></li>
+    <li><div><h3>Cameras and RFID reader <span class="when">4a / 4b</span></h3><ul><li>Each gets its fixed address from the table, a new admin password, cloud/P2P features switched off, and time set to India. Check each one opens from the PC's browser.</li></ul></div></li>
+    <li><div><h3>Relay module, lights and hooter <span class="when">4b</span></h3><ul><li>Set the module to <code>192.168.50.41</code>. The electrician wires the lights and hooter through contactors so that if the module or PC loses power, the lights fail to red.</li></ul></div></li>
+    <li><div><h3>Check everything <span class="when">each phase</span></h3><ul><li>The System page shows the indicator reading and (from Phase 4) each camera, reader and relay as online or offline.</li></ul></div></li>
+  </ol>
+
+  <div class="tbl mid">
+    <table>
+      <thead><tr><th>Problem</th><th>Check</th></tr></thead>
+      <tbody>
+        <tr><td>Page won't open on the PC</td><td>Is the app running? Double-click <code>start.bat</code> and read the black window for errors. Use <code>http://127.0.0.1:8080</code>, not https.</td></tr>
+        <tr><td>Weight shows "No signal"</td><td>Serial cable, COM number in config.toml, indicator switched on and set to continuous output.</td></tr>
+        <tr><td>Camera offline <span class="tag new">4a/4b</span></td><td>PoE switch power, cable to the pole, the camera's address; open <code>http://192.168.50.2x</code> from the PC.</td></tr>
+        <tr><td>RFID not reading <span class="tag new">4b</span></td><td>Tag stuck high on the inside of the windscreen, not behind metallised film; antenna cables tight; reader address.</td></tr>
+        <tr><td>Lights stuck red <span class="tag new">4b</span></td><td>Relay module power and address; this is the safe state, so the operator directs trucks by hand meanwhile.</td></tr>
+        <tr><td>Owner can't reach it remotely</td><td>Weighbridge PC on and online; Tailscale signed in on both devices; the serve command was run.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
 <!-- 03 -->
 <section id="flows">
-  <div class="eyebrow">03 · Flows</div>
+  <div class="eyebrow">04 · Flows</div>
   <h2>All the flows, step by step</h2>
   <p>Each diagram shows the normal path left to right. <span style="color:var(--bad)">Red</span> boxes are where the software refuses and why. <span style="color:var(--amber-ink)">Amber</span> boxes are side paths or checks. The numbers (3 seconds, ±10 kg, 7 days, 5%) are the defaults in <code>config.toml</code> and can be changed.</p>
   <div class="flows">
@@ -914,7 +1074,7 @@ td.good{color:var(--good);font-weight:600} td.bad{color:var(--bad);font-weight:6
 
 <!-- 04 -->
 <section id="hardware">
-  <div class="eyebrow">04 · Hardware</div>
+  <div class="eyebrow">05 · Hardware</div>
   <h2>Hardware you need</h2>
   <p>Prices are approximate September 2026 retail, excluding GST. If you already own a PC or printer that meets the minimum, reuse it.</p>
   <div class="tbl wide">
@@ -931,15 +1091,198 @@ td.good{color:var(--good);font-weight:600} td.bad{color:var(--bad);font-weight:6
         <tr><td><strong>Surge and earthing</strong></td><td>Spike guard</td><td>Earthed socket, surge protector on the serial and network cables</td><td>Lightning around the weighbridge is the most common cause of dead ports.</td><td class="num">1,500–4,000</td></tr>
         <tr><td><strong>Driver display</strong> <span class="tag">optional</span></td><td>n/a</td><td>Second monitor facing the window</td><td>Lets the driver see the weight being taken.</td><td class="num">6,000–8,000</td></tr>
         <tr><td><strong>Owner phone</strong></td><td>Any smartphone</td><td>n/a</td><td>Authenticator app for two-step login; Tailscale app for remote view.</td><td class="num">existing</td></tr>
-        <tr><td><strong>Cameras, RFID, boom barrier</strong> <span class="tag new">Phase 4</span></td><td colspan="3">Not needed now. When wanted: 2 number-plate cameras, 1 top camera, UHF RFID reader, boom barrier, I/O module. See the earlier build plan for specs.</td><td class="num">6–12 L</td></tr>
+        <tr><td><strong>Cameras, RFID, lights, hooter</strong> <span class="tag new">Phase 4</span></td><td colspan="3">No boom barrier. Full list with specs in <a href="#phase4">Cameras and RFID</a>.</td><td class="num">3.4–6.9 L</td></tr>
       </tbody>
     </table>
   </div>
 </section>
 
+<!-- PHASE4 -->
+<section id="phase4">
+  <div class="eyebrow">06 · Cameras and RFID</div>
+  <h2>Phase 4a and 4b: truck photos, RFID and number-plate check, with lights and a hooter</h2>
+  <p>No boom barrier. The traffic lights and hooter tell the driver when to drive on and when to leave, and the operator stays in charge of the capture. Both phases need new code, which I build once you've picked the cameras and reader, testing against simulators first.</p>
+  <div class="two">
+    <div class="card">
+      <h3>4a · Photos <span class="tag new">about 1 week to build</span></h3>
+      <ul class="small">
+        <li>At every capture the PC takes a photo from each camera and stores it with the ticket, with a fingerprint so it can't be replaced later.</li>
+        <li>The photo appears on the ticket page, the printed ticket and the WhatsApp image.</li>
+        <li>The top camera is the evidence against someone standing on the platform or a wheel off the edge.</li>
+        <li>If a camera is offline, the ticket is still saved and marked "no photo".</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>4b · RFID + plate check <span class="tag new">2–3 weeks + 1 week on site</span></h3>
+      <ul class="small">
+        <li>A tag on the windscreen is read as the truck approaches, and the plate camera reads the number.</li>
+        <li>Both must match the same vehicle in the Vehicles master. Then the vehicle number fills in by itself and the light turns green.</li>
+        <li>After capture, a short hooter and the light returning to red tell the driver to leave.</li>
+        <li>A mismatch or unknown tag keeps the light red, sounds a long hooter and needs a supervisor. A truck without a tag can still be weighed by typing the plate; its ticket is marked.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="flows">
+<div class="flow" id="f4a">
+<h3>4a · Photos with every weighment <span class="tag new">Phase 4 · needs new code</span></h3>
+<p>Photos are taken by the server at the moment of capture, never uploaded by hand, and stored with a fingerprint so a photo can&#x27;t be swapped later.</p>
+<figure><div class="scroll"><svg viewBox="0 0 884 250" role="img" aria-label="4a · Photos with every weighment: Stable weight → Capture → Photos taken → Saved with ticket → On ticket + WhatsApp">
+<defs>
+<marker id="f4am" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="f4ab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk-b" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="f4aa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk-a" d="M0,0 L10,5 L0,10 z"/></marker>
+</defs>
+<rect class="b" x="12" y="16" width="156" height="96"/>
+<text class="tn" x="24" y="34">1</text>
+<text class="t" x="24" y="56">Stable weight</text>
+<text class="ts" x="24" y="76">normal weighing</text>
+<text class="ts" x="24" y="94"></text>
+<line class="a" x1="168" y1="64.0" x2="186" y2="64.0" marker-end="url(#f4am)"/>
+<rect class="b" x="188" y="16" width="156" height="96"/>
+<text class="tn" x="200" y="34">2</text>
+<text class="t" x="200" y="56">Capture</text>
+<text class="ts" x="200" y="76">operator presses</text>
+<text class="ts" x="200" y="94">(as today)</text>
+<line class="a" x1="344" y1="64.0" x2="362" y2="64.0" marker-end="url(#f4am)"/>
+<rect class="b-own" x="364" y="16" width="156" height="96"/>
+<text class="tn" x="376" y="34">3</text>
+<text class="t" x="376" y="56">Photos taken</text>
+<text class="ts" x="376" y="76">plate cams + top cam</text>
+<text class="ts" x="376" y="94">ONVIF snapshot</text>
+<line class="a" x1="520" y1="64.0" x2="538" y2="64.0" marker-end="url(#f4am)"/>
+<rect class="b" x="540" y="16" width="156" height="96"/>
+<text class="tn" x="552" y="34">4</text>
+<text class="t" x="552" y="56">Saved with ticket</text>
+<text class="ts" x="552" y="76">file + hash in DB</text>
+<text class="ts" x="552" y="94">can&#x27;t be swapped</text>
+<line class="a" x1="696" y1="64.0" x2="714" y2="64.0" marker-end="url(#f4am)"/>
+<rect class="b" x="716" y="16" width="156" height="96"/>
+<text class="tn" x="728" y="34">5</text>
+<text class="t" x="728" y="56">On ticket + WhatsApp</text>
+<text class="ts" x="728" y="76">photo on the print</text>
+<text class="ts" x="728" y="94">and ticket image</text>
+<line class="a-a" x1="442.0" y1="112" x2="442.0" y2="170" marker-end="url(#f4aa)"/>
+<text class="al-a" x="449.0" y="146">camera offline</text>
+<rect class="b-alt" x="364" y="172" width="156" height="60"/>
+<text class="t" x="374" y="196">Ticket still saved</text>
+<text class="ts" x="374" y="216">marked: no photo</text>
+</svg></div></figure>
+</div>
+<div class="flow" id="f4b">
+<h3>4b · RFID + number-plate check, lights and hooter (no boom) <span class="tag new">Phase 4 · needs new code</span></h3>
+<p>The tag and the plate must both point to the same vehicle before the light turns green. With no boom barrier, the lights and hooter tell the driver what to do.</p>
+<figure><div class="scroll"><svg viewBox="0 0 1236 250" role="img" aria-label="4b · RFID + number-plate check, lights and hooter (no boom): Truck approaches → RFID tag read → Plate read → Match master → Green light → Stable + capture → Hooter chirp">
+<defs>
+<marker id="f4bm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="f4bb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk-b" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="f4ba" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk-a" d="M0,0 L10,5 L0,10 z"/></marker>
+</defs>
+<rect class="b" x="12" y="16" width="156" height="96"/>
+<text class="tn" x="24" y="34">1</text>
+<text class="t" x="24" y="56">Truck approaches</text>
+<text class="ts" x="24" y="76">light shows red</text>
+<text class="ts" x="24" y="94"></text>
+<line class="a" x1="168" y1="64.0" x2="186" y2="64.0" marker-end="url(#f4bm)"/>
+<rect class="b" x="188" y="16" width="156" height="96"/>
+<text class="tn" x="200" y="34">2</text>
+<text class="t" x="200" y="56">RFID tag read</text>
+<text class="ts" x="200" y="76">windscreen tag</text>
+<text class="ts" x="200" y="94">3–4 m range</text>
+<line class="a" x1="344" y1="64.0" x2="362" y2="64.0" marker-end="url(#f4bm)"/>
+<rect class="b" x="364" y="16" width="156" height="96"/>
+<text class="tn" x="376" y="34">3</text>
+<text class="t" x="376" y="56">Plate read</text>
+<text class="ts" x="376" y="76">ANPR camera</text>
+<text class="ts" x="376" y="94"></text>
+<line class="a" x1="520" y1="64.0" x2="538" y2="64.0" marker-end="url(#f4bm)"/>
+<rect class="b-own" x="540" y="16" width="156" height="96"/>
+<text class="tn" x="552" y="34">4</text>
+<text class="t" x="552" y="56">Match master</text>
+<text class="ts" x="552" y="76">tag = plate = vehicle</text>
+<text class="ts" x="552" y="94">plate filled in</text>
+<line class="a" x1="696" y1="64.0" x2="714" y2="64.0" marker-end="url(#f4bm)"/>
+<rect class="b" x="716" y="16" width="156" height="96"/>
+<text class="tn" x="728" y="34">5</text>
+<text class="t" x="728" y="56">Green light</text>
+<text class="ts" x="728" y="76">drive on and stop</text>
+<text class="ts" x="728" y="94"></text>
+<line class="a" x1="872" y1="64.0" x2="890" y2="64.0" marker-end="url(#f4bm)"/>
+<rect class="b" x="892" y="16" width="156" height="96"/>
+<text class="tn" x="904" y="34">6</text>
+<text class="t" x="904" y="56">Stable + capture</text>
+<text class="ts" x="904" y="76">weight + photos</text>
+<text class="ts" x="904" y="94"></text>
+<line class="a" x1="1048" y1="64.0" x2="1066" y2="64.0" marker-end="url(#f4bm)"/>
+<rect class="b" x="1068" y="16" width="156" height="96"/>
+<text class="tn" x="1080" y="34">7</text>
+<text class="t" x="1080" y="56">Hooter chirp</text>
+<text class="ts" x="1080" y="76">light back to red</text>
+<text class="ts" x="1080" y="94">drive off</text>
+<line class="a-a" x1="266.0" y1="112" x2="266.0" y2="170" marker-end="url(#f4ba)"/>
+<text class="al-a" x="273.0" y="146">no tag</text>
+<rect class="b-alt" x="188" y="172" width="156" height="60"/>
+<text class="t" x="198" y="196">Plate typed by hand</text>
+<text class="ts" x="198" y="216">ticket marked NO_TAG</text>
+<line class="a-b" x1="618.0" y1="112" x2="618.0" y2="170" marker-end="url(#f4bb)"/>
+<text class="al-b" x="625.0" y="146">mismatch</text>
+<rect class="b-hold" x="540" y="172" width="156" height="60"/>
+<text class="t" x="550" y="196">Red + long hooter</text>
+<text class="ts" x="550" y="216">supervisor decides</text>
+</svg></div></figure>
+</div>
+  </div>
+
+  <h3>Hardware for Phase 4</h3>
+  <div class="tbl wide">
+    <table>
+      <thead><tr><th>Phase</th><th>Item</th><th>Spec to ask for</th><th class="num">Qty</th><th class="num">Approx. ₹ each</th></tr></thead>
+      <tbody>
+        <tr><td>4a</td><td><strong>Top / overview camera</strong></td><td>4 MP, PoE, IP67, ONVIF + RTSP, night IR, STQC-certified</td><td class="num">1</td><td class="num">15,000–40,000</td></tr>
+        <tr><td>4a</td><td><strong>PoE switch</strong></td><td>8-port, unmanaged is enough for 4a</td><td class="num">1</td><td class="num">8,000–20,000</td></tr>
+        <tr><td>4a</td><td><strong>USB network adapter</strong></td><td>USB 3.0 to gigabit Ethernet, for the device network</td><td class="num">1</td><td class="num">1,000–1,500</td></tr>
+        <tr><td>4a</td><td><strong>Pole, bracket, outdoor CAT6, surge protectors</strong></td><td>Galvanised pole over the platform middle; SPD at both cable ends</td><td class="num">1 set</td><td class="num">15,000–30,000</td></tr>
+        <tr class="total"><td colspan="4">Phase 4a total</td><td class="num">≈ 40,000–90,000</td></tr>
+        <tr><td>4b</td><td><strong>Number-plate (ANPR) cameras</strong></td><td>Built-in ANPR for Indian plates, 4–8 MP, IR for night, PoE, ONVIF, STQC-certified</td><td class="num">2</td><td class="num">60,000–1,20,000</td></tr>
+        <tr><td>4b</td><td><strong>UHF RFID reader</strong></td><td>Fixed reader, 4 antenna ports, LLRP protocol, India band 865–867 MHz, Ethernet</td><td class="num">1</td><td class="num">60,000–1,20,000</td></tr>
+        <tr><td>4b</td><td><strong>RFID antennas</strong></td><td>Circular-polarised, 8–9 dBi, IP65, with low-loss coax</td><td class="num">2</td><td class="num">10,000–20,000</td></tr>
+        <tr><td>4b</td><td><strong>Windscreen tags</strong></td><td>UHF, tamper-evident (break when peeled)</td><td class="num">150</td><td class="num">60–150</td></tr>
+        <tr><td>4b</td><td><strong>Ethernet relay module</strong></td><td>Modbus TCP, 4–8 relays + inputs, DIN rail, in an IP65 box</td><td class="num">1</td><td class="num">8,000–25,000</td></tr>
+        <tr><td>4b</td><td><strong>Traffic lights</strong></td><td>Red/green LED, 200 mm, one per approach</td><td class="num">2</td><td class="num">8,000–15,000</td></tr>
+        <tr><td>4b</td><td><strong>Industrial hooter</strong></td><td>100 dB, 230 V or 24 V</td><td class="num">1</td><td class="num">2,000–5,000</td></tr>
+        <tr><td>4b</td><td><strong>PoE switch upgrade</strong></td><td>Industrial, 8–16 ports (replaces the 4a switch)</td><td class="num">1</td><td class="num">15,000–40,000</td></tr>
+        <tr><td>4b</td><td><strong>Poles, brackets, cabling, conduits, surge protection</strong></td><td>For cameras, antennas and lights on both sides</td><td class="num">1 set</td><td class="num">40,000–80,000</td></tr>
+        <tr class="total"><td colspan="4">Phase 4b total (plus electrician labour)</td><td class="num">≈ 3–6 L</td></tr>
+        <tr><td>optional</td><td><strong>NVR for 24/7 recording</strong></td><td>8-channel, 2 × 4 TB</td><td class="num">1</td><td class="num">30,000–60,000</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="muted small">The current PC (i5, 16 GB) handles Phase 4. Photos add roughly 1 MB per weighment; 300 trucks a day is about 10 GB a month, so keep 500 GB free or move old photos off monthly.</p>
+
+  <div class="two">
+    <div class="card">
+      <h3>Where to mount things</h3>
+      <ul class="small">
+        <li><strong>Plate cameras:</strong> 3–5 m high, 15–30° down towards the plate, 5–10 m before where the front wheels stop. One faces trucks coming in, one faces the other end.</li>
+        <li><strong>Top camera:</strong> on a pole or the control-room wall, seeing the whole deck.</li>
+        <li><strong>RFID antennas:</strong> 3–4 m from the lane at windscreen height, one per approach.</li>
+        <li><strong>Lights:</strong> one per approach, where the driver sees them from the cab. Hooter near the control room.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>What each device must support</h3>
+      <ul class="small">
+        <li><strong>Cameras:</strong> ONVIF and a snapshot URL, RTSP, fixed IP, local admin password. For ANPR: sends plate results by HTTP to the PC, or can be asked for them.</li>
+        <li><strong>RFID reader:</strong> LLRP over the network (port 5084). Avoid readers that only work with their own Windows software.</li>
+        <li><strong>Relay module:</strong> Modbus TCP (port 502), relays rated for the contactor coils.</li>
+        <li>Before buying, send me the model numbers and I'll confirm they'll work.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
 <!-- 05 -->
 <section id="software">
-  <div class="eyebrow">05 · Software</div>
+  <div class="eyebrow">07 · Software</div>
   <h2>Software and accounts you need</h2>
   <div class="tbl mid">
     <table>
@@ -963,7 +1306,7 @@ td.good{color:var(--good);font-weight:600} td.bad{color:var(--bad);font-weight:6
 
 <!-- 06 -->
 <section id="integrations">
-  <div class="eyebrow">06 · Integrations</div>
+  <div class="eyebrow">08 · Integrations</div>
   <h2>What each integration needs</h2>
   <p>Each one is switched on in <code>config.toml</code> and takes effect after restarting the app. Start with the indicator and printer. The others can go live one at a time as their approvals come through.</p>
   <div class="int">
@@ -1087,7 +1430,7 @@ td.good{color:var(--good);font-weight:600} td.bad{color:var(--bad);font-weight:6
 
 <!-- 07 -->
 <section id="security">
-  <div class="eyebrow">07 · Security</div>
+  <div class="eyebrow">09 · Security</div>
   <h2>Security in each setup</h2>
   <div class="two">
     <div class="card">
@@ -1118,7 +1461,7 @@ td.good{color:var(--good);font-weight:600} td.bad{color:var(--bad);font-weight:6
 
 <!-- 08 -->
 <section id="rollout">
-  <div class="eyebrow">08 · Rollout</div>
+  <div class="eyebrow">10 · Rollout</div>
   <h2>Rollout plan, week by week</h2>
   <ol class="steps">
     <li><div><h3>Set up the PC <span class="when">week 1, day 1–2</span></h3>
@@ -1142,14 +1485,19 @@ td.good{color:var(--good);font-weight:600} td.bad{color:var(--bad);font-weight:6
       <ul><li>Test with your own number, then turn them on for everyone.</li></ul></div></li>
     <li><div><h3>Remote view <span class="when">week 3</span></h3>
       <ul><li>Tailscale on the PC and the owner's phone.</li></ul></div></li>
+    <li><div><h3>Phase 4a: truck photos <span class="when">weeks 5–6</span></h3>
+      <ul><li>Buy and mount the top camera, PoE switch and USB network adapter; set up the device network. I build and test the photo capture, then switch it on.</li></ul></div></li>
+    <li><div><h3>Phase 4b: RFID and plate check <span class="when">weeks 7–10</span></h3>
+      <ul><li>Send me the camera and reader models to confirm before buying. Tag every regular truck and record the tag against it in Vehicles.</li>
+      <li>Mount the plate cameras, antennas, lights and hooter; electrician wires the relays. I build against simulators, then one week of on-site testing and a parallel run.</li></ul></div></li>
     <li><div><h3>Later <span class="when">when you decide</span></h3>
-      <ul><li>Stage 2 cloud server (Phase 3); cameras and RFID (Phase 4).</li></ul></div></li>
+      <ul><li>Office access over HTTPS (Phase 2); Stage 2 cloud server (Phase 3).</li></ul></div></li>
   </ol>
 </section>
 
 <!-- 09 -->
 <section id="costs">
-  <div class="eyebrow">09 · Costs</div>
+  <div class="eyebrow">11 · Costs</div>
   <h2>What it costs</h2>
   <div class="tbl mid">
     <table>
@@ -1163,6 +1511,8 @@ td.good{color:var(--good);font-weight:600} td.bad{color:var(--bad);font-weight:6
         <tr><td>SMS at the same volume (if used as well)</td><td class="num">≈ ₹1.5–4.5k / month</td><td class="num">same</td></tr>
         <tr><td>Email, Tailscale, Drive backup</td><td class="num">₹0</td><td class="num">₹0</td></tr>
         <tr><td>Cloud server, domain, backup storage</td><td class="num">n/a</td><td class="num">₹1.5–4k / month</td></tr>
+        <tr><td>Phase 4a: top camera, switch, adapter, pole and cabling</td><td class="num">₹40–90k one-time</td><td class="num">same</td></tr>
+        <tr><td>Phase 4b: plate cameras, RFID, tags, relay module, lights, hooter, poles (plus electrician)</td><td class="num">₹3–6L one-time</td><td class="num">same</td></tr>
         <tr><td>Security test before cloud go-live</td><td class="num">n/a</td><td class="num">₹50k–1.5L one-time</td></tr>
       </tbody>
     </table>
@@ -1172,7 +1522,7 @@ td.good{color:var(--good);font-weight:600} td.bad{color:var(--bad);font-weight:6
 
 <!-- 10 -->
 <section id="next">
-  <div class="eyebrow">10 · Later phases</div>
+  <div class="eyebrow">12 · Later phases</div>
   <h2>What would need new code</h2>
   <div class="tbl mid">
     <table>
@@ -1180,8 +1530,8 @@ td.good{color:var(--good);font-weight:600} td.bad{color:var(--bad);font-weight:6
       <tbody>
         <tr><td><strong>2 · Office access</strong></td><td>HTTPS on the app so office PCs on the LAN can use it safely</td><td>Office PC addresses</td><td>2–3 days</td></tr>
         <tr><td><strong>3 · Cloud</strong></td><td>Sync agent, cloud reports, billing and owner dashboard, multi-site ready</td><td>Cloud account, domain</td><td>2–3 weeks</td></tr>
-        <tr><td><strong>4a · Truck photos</strong></td><td>Photo from an IP camera saved with every weighment and printed on the ticket</td><td>1–2 IP cameras with ONVIF</td><td>about 1 week</td></tr>
-        <tr><td><strong>4b · Automation</strong></td><td>RFID tag and number-plate check, boom barrier and traffic lights, unattended weighing</td><td>RFID reader, cameras, boom, I/O module</td><td>2–3 weeks + site testing</td></tr>
+        <tr><td><strong>4a · Truck photos</strong></td><td>Photos from the cameras saved with every weighment, on the ticket and WhatsApp image</td><td>Top camera, PoE switch, USB network adapter</td><td>about 1 week</td></tr>
+        <tr><td><strong>4b · RFID + plate check</strong></td><td>Tag and plate must match, vehicle filled in automatically, traffic lights and hooter guide the driver (no boom)</td><td>2 ANPR cameras, RFID reader + antennas, tags, relay module, lights, hooter</td><td>2–3 weeks + 1 week on site</td></tr>
         <tr><td><strong>WhatsApp provider</strong></td><td>Support for AiSensy / Interakt / Gupshup instead of Meta direct</td><td>Provider account and API docs</td><td>1–2 days</td></tr>
       </tbody>
     </table>
