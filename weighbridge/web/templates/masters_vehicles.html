@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Vehicles{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Vehicles</h1></div>
+{% include "_masters_nav.html" %}
+{% if can_edit %}
+<form method="post" action="/masters/vehicles" class="panel form-grid">
+  <input type="hidden" name="csrf" value="{{ user.csrf }}">
+  {% if editing %}<input type="hidden" name="id" value="{{ editing.id }}">{% endif %}
+  <h2 class="h3 span-all">{{ 'Edit ' ~ editing.number if editing else 'Add vehicle' }}</h2>
+  <div class="field"><label for="number">Vehicle number</label><input id="number" name="number" class="plate" required value="{{ editing.number if editing else '' }}"></div>
+  <div class="field"><label for="transporter">Transporter / owner</label><input id="transporter" name="transporter" value="{{ editing.transporter if editing else '' }}"></div>
+  <div class="field"><label for="driver_mobile">Driver mobile (SMS)</label><input id="driver_mobile" name="driver_mobile" inputmode="tel" value="{{ editing.driver_mobile if editing else '' }}"></div>
+  <div class="field"><label for="owner_whatsapp">Owner WhatsApp</label><input id="owner_whatsapp" name="owner_whatsapp" inputmode="tel" value="{{ editing.owner_whatsapp if editing else '' }}"></div>
+  <div class="field"><label for="active">Status</label><select id="active" name="active">
+    <option value="1">Allowed</option><option value="0" {% if editing and not editing.active %}selected{% endif %}>Blocked</option></select></div>
+  <div class="actions span-all"><button class="btn btn-primary" type="submit">Save</button>{% if editing %}<a class="btn" href="/masters/vehicles">Cancel</a>{% endif %}</div>
+  <p class="small muted span-all">Stored tare is set only by weighing the empty vehicle, never typed in.</p>
+</form>
+{% endif %}
+<div class="table-wrap"><table>
+  <thead><tr><th>Number</th><th>Transporter</th><th>Driver mobile</th><th>Owner WhatsApp</th><th class="num">Stored tare kg</th><th>Tare taken</th><th>Status</th><th></th></tr></thead>
+  <tbody>{% for v in rows %}
+  <tr class="{{ '' if v.active else 'row-muted' }}"><td class="plate-cell">{{ v.number }}</td><td>{{ v.transporter }}</td><td>{{ v.driver_mobile }}</td><td>{{ v.owner_whatsapp }}</td>
+    <td class="num">{{ v.stored_tare_kg|kg }}</td><td>{{ v.tare_updated_at|dt }}</td><td>{{ 'Allowed' if v.active else 'Blocked' }}</td>
+    <td>{% if can_edit %}<a href="?edit={{ v.id }}">Edit</a>{% endif %}</td></tr>
+  {% else %}<tr><td colspan="8" class="muted">Vehicles are added automatically the first time they are weighed.</td></tr>{% endfor %}</tbody>
+</table></div>
+{% endblock %}

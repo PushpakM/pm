@@ -1,0 +1,26 @@
+@page { size: A5 landscape; margin: 8mm; }
+* { box-sizing: border-box; }
+body { font: 12px/1.35 "Segoe UI", Arial, sans-serif; color: #000; margin: 0; padding: 10px; }
+.bar { margin-bottom: 10px; }
+.bar button { font: inherit; padding: 6px 16px; }
+.slip { border: 1.5px solid #000; padding: 10px 14px; margin-bottom: 14px; page-break-after: always; }
+.slip:last-child { page-break-after: auto; }
+header { display: flex; justify-content: space-between; gap: 12px; border-bottom: 2px solid #000; padding-bottom: 6px; }
+h1 { font-size: 18px; margin: 0; }
+header p { margin: 2px 0 0; }
+.right { text-align: right; }
+.copy { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
+.no { font: 700 16px Consolas, monospace; }
+table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+th, td { border: 1px solid #000; padding: 4px 6px; text-align: left; }
+.facts th { width: 16%; background: #eee; }
+.big { font: 700 16px Consolas, monospace; letter-spacing: .05em; }
+.weights th { background: #eee; }
+.num { text-align: right; font: 600 14px Consolas, monospace; }
+.sum td { font-weight: 600; }
+.net td { font-size: 16px; font-weight: 700; background: #eee; }
+.net .num { font-size: 20px; }
+footer p { margin: 6px 0 0; font-size: 10px; }
+.sign { display: flex; justify-content: space-between; margin-top: 28px; }
+.sign span { border-top: 1px solid #000; padding-top: 2px; width: 30%; text-align: center; }
+@media print { .no-print { display: none; } body { padding: 0; } }

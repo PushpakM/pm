@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Weighbridge{% endblock %} · {{ company.name }}</title>
+<link rel="stylesheet" href="/static/app.css">
+<script src="/static/app.js" defer></script>
+</head>
+<body class="{% block body_class %}{% endblock %}">
+{% if user and user.mfa_ok is defined %}
+<header class="topbar">
+  <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span>{{ company.name }}<small>{{ company.site_name }}</small></a>
+  <nav class="mainnav" aria-label="Main">
+    {% set r = user.role %}
+    {% if r in ('admin','supervisor','operator') %}<a href="/weigh" {% if request.url.path == '/weigh' %}aria-current="page"{% endif %}>Weigh</a>{% endif %}
+    <a href="/tickets" {% if request.url.path.startswith('/tickets') %}aria-current="page"{% endif %}>Tickets</a>
+    {% if r in ('admin','accounts','auditor') %}<a href="/billing" {% if request.url.path.startswith('/billing') %}aria-current="page"{% endif %}>Billing</a>{% endif %}
+    <a href="/reports" {% if request.url.path.startswith('/reports') %}aria-current="page"{% endif %}>Reports</a>
+    <a href="/masters/vehicles" {% if request.url.path.startswith('/masters') %}aria-current="page"{% endif %}>Masters</a>
+    {% if r == 'admin' %}<a href="/users" {% if request.url.path == '/users' %}aria-current="page"{% endif %}>Users</a>{% endif %}
+    {% if r in ('admin','auditor') %}<a href="/audit" {% if request.url.path == '/audit' %}aria-current="page"{% endif %}>Audit</a>{% endif %}
+    {% if r == 'admin' %}<a href="/system" {% if request.url.path == '/system' %}aria-current="page"{% endif %}>System</a>{% endif %}
+  </nav>
+  <div class="who">
+    <span>{{ user.full_name }} <small>{{ ROLE_LABELS[user.role] }}</small></span>
+    <a href="/account/password">Password</a>
+    <a href="/account/mfa">2-step</a>
+    <form method="post" action="/logout"><input type="hidden" name="csrf" value="{{ user.csrf }}"><button class="linkish" type="submit">Log out</button></form>
+  </div>
+</header>
+{% endif %}
+<main class="page">
+  {% if flash %}<div class="flash {{ 'flash-err' if flash.kind == 'err' else 'flash-ok' }}" role="status">{{ flash.text }}</div>{% endif %}
+  {% block content %}{% endblock %}
+</main>
+</body>
+</html>

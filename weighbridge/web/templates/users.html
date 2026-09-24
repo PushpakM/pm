@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Users{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Users</h1></div>
+<form method="post" action="/users" class="panel form-grid">
+  <input type="hidden" name="csrf" value="{{ user.csrf }}"><input type="hidden" name="action" value="create">
+  <h2 class="h3 span-all">Add a user</h2>
+  <div class="field"><label for="username">Username</label><input id="username" name="username" required pattern="[A-Za-z0-9]{3,}" autocomplete="off"></div>
+  <div class="field"><label for="full_name">Full name</label><input id="full_name" name="full_name" required></div>
+  <div class="field"><label for="role">Role</label><select id="role" name="role">{% for r in roles %}<option value="{{ r }}" {% if r == 'operator' %}selected{% endif %}>{{ ROLE_LABELS[r] }}</option>{% endfor %}</select></div>
+  <div class="field"><label for="password">First password</label><input id="password" name="password" type="password" minlength="{{ min_len }}" required autocomplete="new-password"></div>
+  <div class="actions span-all"><button class="btn btn-primary" type="submit">Add user</button>
+    <span class="small muted">They must set their own password at first login. One person, one account.</span></div>
+</form>
+
+<div class="table-wrap"><table>
+  <thead><tr><th>User</th><th>Role</th><th>2-step</th><th>Last login</th><th>Status</th><th>Actions</th></tr></thead>
+  <tbody>{% for u in rows %}
+  <tr class="{{ '' if u.active else 'row-muted' }}">
+    <td><b>{{ u.username }}</b><br><span class="small">{{ u.full_name }}</span></td>
+    <td><form method="post" action="/users" class="inline"><input type="hidden" name="csrf" value="{{ user.csrf }}">
+      <input type="hidden" name="id" value="{{ u.id }}"><input type="hidden" name="action" value="role">
+      <select name="role" aria-label="Role for {{ u.username }}">{% for r in roles %}<option value="{{ r }}" {% if r == u.role %}selected{% endif %}>{{ ROLE_LABELS[r] }}</option>{% endfor %}</select>
+      <button class="btn btn-sm" type="submit">Set</button></form></td>
+    <td>{{ 'On' if u.totp_enabled else 'Off' }}</td>
+    <td>{{ u.last_login_at|dt }}</td>
+    <td>{{ 'Active' if u.active else 'Disabled' }}{% if u.locked_until %}<br><span class="small warn-text">locked until {{ u.locked_until|dt }}</span>{% endif %}</td>
+    <td class="actions">
+      <form method="post" action="/users" class="inline"><input type="hidden" name="csrf" value="{{ user.csrf }}"><input type="hidden" name="id" value="{{ u.id }}">
+        <input type="hidden" name="action" value="{{ 'disable' if u.active else 'enable' }}"><button class="btn btn-sm" type="submit">{{ 'Disable' if u.active else 'Enable' }}</button></form>
+      {% if u.totp_enabled %}<form method="post" action="/users" class="inline"><input type="hidden" name="csrf" value="{{ user.csrf }}"><input type="hidden" name="id" value="{{ u.id }}">
+        <input type="hidden" name="action" value="reset_mfa"><button class="btn btn-sm" type="submit">Reset 2-step</button></form>{% endif %}
+      <form method="post" action="/users" class="inline"><input type="hidden" name="csrf" value="{{ user.csrf }}"><input type="hidden" name="id" value="{{ u.id }}">
+        <input type="hidden" name="action" value="reset_password"><input name="password" type="password" minlength="{{ min_len }}" placeholder="New password" aria-label="New password for {{ u.username }}" required autocomplete="new-password">
+        <button class="btn btn-sm" type="submit">Reset password</button></form>
+    </td>
+  </tr>{% endfor %}</tbody>
+</table></div>
+{% endblock %}

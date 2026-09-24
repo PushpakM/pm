@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}{{ t.ticket_no }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>{{ t.ticket_no }} <span class="chip chip-{{ t.status }}">{{ t.status }}</span></h1>
+  <div class="actions">
+    {% if t.status == 'closed' %}
+      <a class="btn btn-primary" href="/tickets/{{ t.id }}/print" target="_blank" rel="noopener">Print ticket</a>
+      <a class="btn" href="/tickets/{{ t.id }}/image.png" target="_blank" rel="noopener">Ticket image</a>
+      {% if user.role in ('admin','supervisor','operator','accounts') %}
+      <form method="post" action="/tickets/{{ t.id }}/resend"><input type="hidden" name="csrf" value="{{ user.csrf }}">
+        <button class="btn" type="submit">Send SMS / WhatsApp / email</button></form>
+      {% endif %}
+    {% endif %}
+  </div>
+</div>
+
+<div class="ticket-grid">
+  <section class="panel">
+    <dl class="facts">
+      <dt>Vehicle</dt><dd class="plate-cell">{{ t.vehicle_no }}</dd>
+      <dt>Party</dt><dd>{{ t.party_name or '—' }}</dd>
+      <dt>Material</dt><dd>{{ t.material_name or '—' }}</dd>
+      <dt>First weighment</dt><dd>{{ t.first_kg|kg }} kg · {{ t.first_at|dt }} · {{ t.first_user_name }}{% if t.first_manual %} · <b class="warn-text">by hand</b>{% endif %}</dd>
+      <dt>{{ 'Stored tare' if t.stored_tare else 'Second weighment' }}</dt>
+      <dd>{% if t.second_kg is not none %}{{ t.second_kg|kg }} kg · {{ t.second_at|dt }}{% if not t.stored_tare %} · {{ t.second_user_name }}{% endif %}{% if t.second_manual %} · <b class="warn-text">by hand</b>{% endif %}{% else %}Waiting{% endif %}</dd>
+      <dt>Bill</dt><dd>{{ t.bill_no or 'Not billed' }}</dd>
+      <dt>Remarks</dt><dd>{{ t.remarks or '—' }}</dd>
+      {% if t.record_hash %}<dt>Verification code</dt><dd><code>{{ t.record_hash[:16]|upper }}</code></dd>{% endif %}
+    </dl>
+    {% if t.flags %}
+    <div class="notice">{% for fl in t.flags.split(',') if fl %}<div>⚑ {{ FLAG_LABELS.get(fl, fl) }}</div>{% endfor %}</div>
+    {% endif %}
+  </section>
+  <section class="panel netbox">
+    <div><span>Gross</span><b>{{ t.gross_kg|kg }}</b></div>
+    <div><span>Tare</span><b>{{ t.tare_kg|kg }}</b></div>
+    <div class="net"><span>Net kg</span><b>{{ t.net_kg|kg }}</b><small>{{ t.net_kg|mt }} MT</small></div>
+  </section>
+</div>
+
+{% if user.role in ('admin','supervisor') and t.status != 'cancelled' and not t.bill_id %}
+<section class="panel">
+  <h2 class="h3">Supervisor actions</h2>
+  <p class="small muted">Weights can never be changed. You can correct the party or material, or cancel the ticket. Both need a reason and are recorded.</p>
+  <div class="row2">
+    <form method="post" action="/tickets/{{ t.id }}/correct" class="stack">
+      <input type="hidden" name="csrf" value="{{ user.csrf }}">
+      <label for="c-party">Party</label>
+      <select id="c-party" name="party_id"><option value="">— none —</option>
+        {% for p in parties %}<option value="{{ p.id }}" {% if p.id == t.party_id %}selected{% endif %}>{{ p.name }}</option>{% endfor %}</select>
+      <label for="c-mat">Material</label>
+      <select id="c-mat" name="material_id"><option value="">— none —</option>
+        {% for m in materials %}<option value="{{ m.id }}" {% if m.id == t.material_id %}selected{% endif %}>{{ m.name }}</option>{% endfor %}</select>
+      <label for="c-reason">Reason</label><input id="c-reason" name="reason" required minlength="5">
+      <button class="btn" type="submit">Save correction</button>
+    </form>
+    <form method="post" action="/tickets/{{ t.id }}/cancel" class="stack">
+      <input type="hidden" name="csrf" value="{{ user.csrf }}">
+      <label for="x-reason">Reason for cancelling</label><input id="x-reason" name="reason" required minlength="5">
+      <label class="check"><input type="checkbox" required> I understand this ticket will be excluded from bills and reports</label>
+      <button class="btn btn-danger" type="submit">Cancel ticket</button>
+    </form>
+  </div>
+</section>
+{% endif %}
+
+{% if messages %}
+<section class="panel">
+  <h2 class="h3">Messages</h2>
+  <div class="table-wrap"><table><thead><tr><th>Channel</th><th>To</th><th>Status</th><th>Tries</th><th>Error</th></tr></thead><tbody>
+  {% for m in messages %}<tr><td>{{ m.channel }}</td><td>{{ m.recipient }}</td><td><span class="chip chip-{{ m.status }}">{{ m.status }}</span></td><td>{{ m.attempts }}</td><td class="small wrap">{{ m.last_error }}</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+{% endif %}
+
+<section class="panel">
+  <h2 class="h3">History</h2>
+  <div class="table-wrap"><table><thead><tr><th>When</th><th>Who</th><th>What</th><th>Details</th></tr></thead><tbody>
+  {% for h in history %}<tr><td>{{ h.at|dt }}</td><td>{{ h.username }}</td><td>{{ h.action }}</td><td class="small mono wrap">{{ h.details }}</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Weigh{% endblock %}
+{% block content %}
+<div class="weigh-grid">
+  <section class="panel">
+    <div class="scale" id="scale" data-state="nosignal" aria-live="polite">
+      <div class="scale-head"><span class="eyebrow">Live weight</span><span class="chip" id="scale-status">Connecting…</span></div>
+      <div class="scale-value"><span id="scale-kg">—</span><small>kg</small></div>
+      <div class="scale-foot"><span id="scale-mt">— MT</span><span class="muted" id="scale-raw"></span></div>
+    </div>
+
+    <form method="post" action="/weigh" id="weigh-form" class="weigh-form">
+      <input type="hidden" name="csrf" value="{{ user.csrf }}">
+      <div class="field">
+        <label for="vehicle_no">Vehicle number</label>
+        <input id="vehicle_no" name="vehicle_no" list="vehicle-list" autocomplete="off" required
+               placeholder="MH34AB1234" class="plate" autofocus>
+        <datalist id="vehicle-list">{% for v in vehicles %}<option value="{{ v }}">{% endfor %}</datalist>
+      </div>
+      <div id="vehicle-info" class="vehicle-info" hidden></div>
+
+      <fieldset class="mode" id="mode-box" hidden>
+        <legend>How to weigh</legend>
+        <label><input type="radio" name="mode" value="two" checked> Two weighments (loaded and empty)</label>
+        <label><input type="radio" name="mode" value="stored"> One weighment, use stored tare <span id="tare-text"></span></label>
+      </fieldset>
+
+      <div class="row2">
+        <div class="field">
+          <label for="party_id">Party</label>
+          <select id="party_id" name="party_id">
+            <option value="">— choose —</option>
+            {% for p in parties %}<option value="{{ p.id }}">{{ p.name }} ({{ p.kind }})</option>{% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label for="material_id">Material</label>
+          <select id="material_id" name="material_id">
+            <option value="">— choose —</option>
+            {% for m in materials %}<option value="{{ m.id }}">{{ m.name }}</option>{% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="remarks">Remarks <span class="muted">(optional)</span></label>
+        <input id="remarks" name="remarks" maxlength="200">
+      </div>
+
+      {% if user.role in ('admin','supervisor') %}
+      <details class="manual">
+        <summary>Indicator not working? Enter weight by hand (supervisor)</summary>
+        <p class="small muted">The ticket will be marked "Weight entered by hand" and the owner sees it in the exception report.</p>
+        <div class="row2">
+          <div class="field"><label for="manual_kg">Weight (kg)</label><input id="manual_kg" name="manual_kg" inputmode="numeric"></div>
+          <div class="field"><label for="manual_reason">Reason</label><input id="manual_reason" name="manual_reason" maxlength="200"></div>
+        </div>
+        <label class="check"><input type="checkbox" name="manual" value="1" id="manual"> Use this hand-entered weight</label>
+      </details>
+      {% endif %}
+
+      <div class="actions">
+        <button class="btn btn-primary btn-big" type="submit" id="capture-btn">Capture weight</button>
+        <button class="btn" type="submit" formaction="/tare" id="tare-btn" title="Weigh an empty vehicle to update its stored tare. No ticket is made.">Record tare only</button>
+      </div>
+      <p class="small muted">The weight is taken from the indicator when you press Capture. It can't be typed in.</p>
+    </form>
+  </section>
+
+  <aside class="side">
+    <section class="panel">
+      <h2 class="h3">Today</h2>
+      <div class="kpis">
+        <div><b>{{ totals.trips }}</b><span>trips</span></div>
+        <div><b>{{ totals.net_kg|mt }}</b><span>net MT</span></div>
+        <div><b>{{ totals.open }}</b><span>open</span></div>
+        <div class="{{ 'warn' if totals.flagged else '' }}"><b>{{ totals.flagged }}</b><span>flagged</span></div>
+      </div>
+    </section>
+    <section class="panel">
+      <h2 class="h3">Waiting for second weighment</h2>
+      {% if open_tickets %}
+      <ul class="list">
+        {% for t in open_tickets %}
+        <li><button type="button" class="linkish plate-pick" data-plate="{{ t.vehicle_no }}">{{ t.vehicle_no }}</button>
+          <span class="num">{{ t.first_kg|kg }} kg</span><span class="muted small">{{ t.first_at|dt }}</span></li>
+        {% endfor %}
+      </ul>
+      {% else %}<p class="muted small">None.</p>{% endif %}
+    </section>
+    <section class="panel">
+      <h2 class="h3">Recent tickets</h2>
+      <ul class="list">
+        {% for t in recent %}
+        <li><a href="/tickets/{{ t.id }}">{{ t.ticket_no }}</a><span>{{ t.vehicle_no }}</span>
+          <span class="num">{{ t.net_kg|kg }} kg</span>{% if t.flags %}<span class="chip chip-warn" title="{{ t.flags }}">flag</span>{% endif %}</li>
+        {% else %}<li class="muted small">No tickets yet.</li>
+        {% endfor %}
+      </ul>
+    </section>
+  </aside>
+</div>
+{% endblock %}

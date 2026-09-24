@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Audit log{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Audit log</h1></div>
+<section class="panel {{ 'ok-box' if chain_ok else 'bad-box' }}">
+  {% if chain_ok %}
+  <b>Chain intact.</b> All {{ chain_count }} records check out; nothing has been changed or deleted.
+  {% else %}
+  <b>Chain broken at record {{ chain_bad }}.</b> Records from that point were changed outside this software. Stop, keep the PC as it is, and compare with the daily summary emails and backups.
+  {% endif %}
+  <div class="small">Current chain code: <code>{{ head }}</code></div>
+</section>
+<form method="get" action="/audit" class="filters">
+  <div class="field"><label for="action">Action starts with</label><input id="action" name="action" value="{{ q.get('action','') }}" placeholder="ticket. / login. / bill."></div>
+  <div class="field"><label for="q">Search</label><input id="q" name="q" value="{{ q.get('q','') }}" placeholder="ticket no, user, vehicle"></div>
+  <button class="btn" type="submit">Filter</button>
+</form>
+<div class="table-wrap"><table>
+  <thead><tr><th>#</th><th>When</th><th>User</th><th>Action</th><th>Item</th><th>Details</th><th>From</th></tr></thead>
+  <tbody>{% for r in rows %}
+  <tr><td class="num">{{ r.id }}</td><td>{{ r.at|dt }}</td><td>{{ r.username }}</td><td>{{ r.action }}</td><td>{{ r.entity }} {{ r.entity_id }}</td>
+    <td class="small mono wrap">{{ r.details }}</td><td class="small">{{ r.ip }}</td></tr>
+  {% endfor %}</tbody>
+</table></div>
+{% endblock %}

@@ -1,0 +1,5 @@
+<nav class="tabs" aria-label="Masters">
+  <a href="/masters/vehicles" {% if request.url.path.endswith('vehicles') %}aria-current="page"{% endif %}>Vehicles</a>
+  <a href="/masters/parties" {% if request.url.path.endswith('parties') %}aria-current="page"{% endif %}>Parties</a>
+  <a href="/masters/materials" {% if request.url.path.endswith('materials') %}aria-current="page"{% endif %}>Materials</a>
+</nav>

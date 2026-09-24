@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Two-step login{% endblock %}
+{% block body_class %}auth{% endblock %}
+{% block content %}
+<div class="auth-box">
+  <h1>Enter your 6-digit code</h1>
+  <p class="muted">Open your authenticator app (Google Authenticator, Microsoft Authenticator or similar) and type the code shown for {{ company.name }}.</p>
+  <form method="post" action="/mfa" class="stack">
+    <input type="hidden" name="csrf" value="{{ user.csrf }}">
+    <label for="code">Code</label>
+    <input id="code" name="code" inputmode="numeric" pattern="[0-9 ]{6,7}" autocomplete="one-time-code" required autofocus>
+    <button class="btn btn-primary" type="submit">Continue</button>
+  </form>
+  <form method="post" action="/logout"><input type="hidden" name="csrf" value="{{ user.csrf }}"><button class="linkish" type="submit">Log out</button></form>
+</div>
+{% endblock %}

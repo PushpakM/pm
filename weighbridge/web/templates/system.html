@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}System{% endblock %}
+{% block content %}
+<div class="page-head"><h1>System</h1></div>
+<div class="row2">
+  <section class="panel">
+    <h2 class="h3">Indicator</h2>
+    <dl class="facts">
+      <dt>Source</dt><dd>{{ cfg.indicator.source }}{% if cfg.indicator.source == 'serial' %} · {{ cfg.indicator.port }} @ {{ cfg.indicator.baudrate }}{% elif cfg.indicator.source == 'tcp' %} · {{ cfg.indicator.host }}:{{ cfg.indicator.tcp_port }}{% endif %}</dd>
+      <dt>Status</dt><dd>{{ weight.message }}</dd>
+      <dt>Last reading</dt><dd>{{ weight.kg|kg }} kg</dd>
+      <dt>Raw text</dt><dd><code>{{ weight.raw }}</code></dd>
+      <dt>Stable after</dt><dd>{{ cfg.indicator.stable_seconds }} s within ±{{ cfg.indicator.stable_tolerance_kg }} kg</dd>
+      <dt>Capacity</dt><dd>{{ cfg.indicator.capacity_kg|kg }} kg</dd>
+    </dl>
+    {% if cfg.indicator.source == 'simulator' %}<p class="notice">Running on the simulator. Set source = "serial" in config.toml before real use.</p>{% endif %}
+  </section>
+  <section class="panel">
+    <h2 class="h3">Channels</h2>
+    <dl class="facts">
+      <dt>WhatsApp</dt><dd>{{ 'On' if cfg.whatsapp.enabled else 'Off' }}</dd>
+      <dt>SMS</dt><dd>{{ 'On' if cfg.sms.enabled else 'Off' }}</dd>
+      <dt>Email</dt><dd>{{ 'On' if cfg.email.enabled else 'Off' }}</dd>
+      <dt>Tally push</dt><dd>{{ 'On · ' ~ cfg.tally.url if cfg.tally.enabled else 'Off (XML download only)' }}</dd>
+      <dt>Daily summary</dt><dd>{{ cfg.notify.owner_email or 'No owner email set' }} at {{ cfg.notify.daily_summary_hour }}:00</dd>
+    </dl>
+    <p class="small muted">Change these in config.toml, then restart the app.</p>
+  </section>
+</div>
+
+<section class="panel">
+  <div class="page-head"><h2 class="h3">Backups</h2>
+    <form method="post" action="/system/backup"><input type="hidden" name="csrf" value="{{ user.csrf }}"><button class="btn" type="submit">Back up now</button></form></div>
+  <p class="small muted">A backup is made automatically once a day and the last {{ cfg.backup.keep }} are kept in {{ cfg.backup_dir }}.
+    {% if cfg.backup.extra_dir %}A copy also goes to {{ cfg.backup.extra_dir }}.{% else %}<b>Set backup.extra_dir to a USB drive or synced folder so a copy leaves this PC.</b>{% endif %}</p>
+  <ul class="list">{% for b in backups[:10] %}<li><span class="mono">{{ b.name }}</span><span class="num">{{ '%.1f'|format(b.size_mb) }} MB</span></li>{% else %}<li class="muted">No backups yet.</li>{% endfor %}</ul>
+</section>
+
+<section class="panel">
+  <h2 class="h3">Message outbox</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Created</th><th>Channel</th><th>To</th><th>Subject / text</th><th>Status</th><th>Tries</th><th>Error</th><th></th></tr></thead>
+    <tbody>{% for m in outbox %}
+    <tr><td>{{ m.created_at|dt }}</td><td>{{ m.channel }}</td><td>{{ m.recipient }}</td><td class="small">{{ (m.subject or m.body)[:60] }}</td>
+      <td><span class="chip chip-{{ m.status }}">{{ m.status }}</span></td><td>{{ m.attempts }}</td><td class="small">{{ m.last_error[:120] }}</td>
+      <td>{% if m.status == 'failed' %}<form method="post" action="/system/outbox/{{ m.id }}/retry"><input type="hidden" name="csrf" value="{{ user.csrf }}"><button class="btn btn-sm" type="submit">Retry</button></form>{% endif %}</td></tr>
+    {% else %}<tr><td colspan="8" class="muted">Nothing sent yet.</td></tr>{% endfor %}</tbody>
+  </table></div>
+</section>
+{% endblock %}

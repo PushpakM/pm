@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Tickets{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Tickets</h1>
+  <a class="btn" href="/tickets.xlsx?{{ query }}">Download Excel</a>
+</div>
+<form class="filters" method="get" action="/tickets">
+  <div class="field"><label for="from">From</label><input type="date" id="from" name="from" value="{{ f.date_from }}"></div>
+  <div class="field"><label for="to">To</label><input type="date" id="to" name="to" value="{{ f.date_to }}"></div>
+  <div class="field"><label for="vehicle">Vehicle</label><input id="vehicle" name="vehicle" value="{{ f.vehicle }}"></div>
+  <div class="field"><label for="party_id">Party</label><select id="party_id" name="party_id"><option value="">All</option>
+    {% for p in parties %}<option value="{{ p.id }}" {% if f.party_id|string == p.id|string %}selected{% endif %}>{{ p.name }}</option>{% endfor %}</select></div>
+  <div class="field"><label for="material_id">Material</label><select id="material_id" name="material_id"><option value="">All</option>
+    {% for m in materials %}<option value="{{ m.id }}" {% if f.material_id|string == m.id|string %}selected{% endif %}>{{ m.name }}</option>{% endfor %}</select></div>
+  <div class="field"><label for="status">Status</label><select id="status" name="status">
+    {% for v, l in [('', 'All'), ('open','Open'), ('closed','Closed'), ('cancelled','Cancelled')] %}<option value="{{ v }}" {% if f.status == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+  <label class="check"><input type="checkbox" name="flagged" value="1" {% if f.flagged %}checked{% endif %}> Flagged only</label>
+  <button class="btn" type="submit">Show</button>
+</form>
+<p class="muted small">{{ tickets|length }} tickets shown · {{ closed_count }} closed · net {{ total_net|mt }} MT</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Ticket</th><th>Status</th><th>Vehicle</th><th>Party</th><th>Material</th><th>Closed</th>
+    <th class="num">Gross kg</th><th class="num">Tare kg</th><th class="num">Net kg</th><th>Flags</th><th>Bill</th></tr></thead>
+  <tbody>
+  {% for t in tickets %}
+    <tr class="{{ 'row-muted' if t.status == 'cancelled' else '' }}">
+      <td><a href="/tickets/{{ t.id }}">{{ t.ticket_no }}</a></td>
+      <td><span class="chip chip-{{ t.status }}">{{ t.status }}</span></td>
+      <td class="plate-cell">{{ t.vehicle_no }}</td><td>{{ t.party_name or '—' }}</td><td>{{ t.material_name or '—' }}</td>
+      <td>{{ (t.closed_at or t.first_at)|dt }}</td>
+      <td class="num">{{ t.gross_kg|kg }}</td><td class="num">{{ t.tare_kg|kg }}</td><td class="num"><b>{{ t.net_kg|kg }}</b></td>
+      <td>{% for fl in t.flags.split(',') if fl %}<span class="chip chip-warn" title="{{ FLAG_LABELS.get(fl, fl) }}">{{ fl|lower|replace('_',' ') }}</span> {% endfor %}</td>
+      <td>{{ t.bill_no or '' }}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="11" class="muted">No tickets match these filters.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

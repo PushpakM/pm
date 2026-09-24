@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Two-step login{% endblock %}
+{% block body_class %}auth{% endblock %}
+{% block content %}
+<div class="auth-box">
+  <h1>Two-step login</h1>
+  {% if enabled %}
+    <p>Two-step login is on for your account. If you lose your phone, ask the owner to reset it from the Users page.</p>
+    <p><a href="/">Back</a></p>
+  {% else %}
+    {% if user.role in cfg.security.mfa_required_roles %}<p class="notice">Your role must use two-step login. Set it up now to continue.</p>{% endif %}
+    <ol class="small">
+      <li>Install Google Authenticator or Microsoft Authenticator on your phone.</li>
+      <li>In the app, add an account and scan this code.</li>
+      <li>Type the 6-digit code the app shows.</li>
+    </ol>
+    <img class="qr" src="{{ qr }}" alt="QR code for your authenticator app" width="220" height="220">
+    <p class="small muted">Can't scan? Enter this key by hand: <code class="key">{{ secret }}</code></p>
+    <form method="post" action="/account/mfa" class="stack">
+      <input type="hidden" name="csrf" value="{{ user.csrf }}">
+      <label for="code">6-digit code</label>
+      <input id="code" name="code" inputmode="numeric" autocomplete="one-time-code" required>
+      <button class="btn btn-primary" type="submit">Turn on</button>
+    </form>
+  {% endif %}
+</div>
+{% endblock %}

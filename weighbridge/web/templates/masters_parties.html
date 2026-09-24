@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Parties{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Parties</h1></div>
+{% include "_masters_nav.html" %}
+{% if can_edit %}
+<form method="post" action="/masters/parties" class="panel form-grid">
+  <input type="hidden" name="csrf" value="{{ user.csrf }}">
+  {% if editing %}<input type="hidden" name="id" value="{{ editing.id }}">{% endif %}
+  <h2 class="h3 span-all">{{ 'Edit ' ~ editing.name if editing else 'Add party' }}</h2>
+  <div class="field"><label for="name">Name</label><input id="name" name="name" required value="{{ editing.name if editing else '' }}"></div>
+  <div class="field"><label for="kind">Type</label><select id="kind" name="kind">
+    {% for k, l in [('customer','Customer (you bill them)'), ('contractor','Contractor (you pay them per MT)'), ('supplier','Supplier')] %}
+    <option value="{{ k }}" {% if editing and editing.kind == k %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+  <div class="field"><label for="rate_per_mt">Rate ₹ per MT</label><input id="rate_per_mt" name="rate_per_mt" inputmode="decimal" value="{{ editing.rate_per_mt if editing else '' }}"></div>
+  <div class="field"><label for="gstin">GSTIN</label><input id="gstin" name="gstin" maxlength="15" value="{{ editing.gstin if editing else '' }}"></div>
+  <div class="field"><label for="mobile">Mobile (SMS)</label><input id="mobile" name="mobile" inputmode="tel" value="{{ editing.mobile if editing else '' }}"></div>
+  <div class="field"><label for="whatsapp">WhatsApp</label><input id="whatsapp" name="whatsapp" inputmode="tel" value="{{ editing.whatsapp if editing else '' }}"></div>
+  <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" value="{{ editing.email if editing else '' }}"></div>
+  <div class="field"><label for="tally_ledger">Tally ledger name</label><input id="tally_ledger" name="tally_ledger" placeholder="Same as name" value="{{ editing.tally_ledger if editing else '' }}"></div>
+  <div class="field span-2"><label for="address">Address</label><input id="address" name="address" value="{{ editing.address if editing else '' }}"></div>
+  <div class="field"><label for="active">Status</label><select id="active" name="active">
+    <option value="1">Active</option><option value="0" {% if editing and not editing.active %}selected{% endif %}>Inactive</option></select></div>
+  <div class="actions span-all"><button class="btn btn-primary" type="submit">Save</button>{% if editing %}<a class="btn" href="/masters/parties">Cancel</a>{% endif %}</div>
+</form>
+{% endif %}
+<div class="table-wrap"><table>
+  <thead><tr><th>Name</th><th>Type</th><th class="num">₹/MT</th><th>GSTIN</th><th>Mobile</th><th>WhatsApp</th><th>Email</th><th>Status</th><th></th></tr></thead>
+  <tbody>{% for p in rows %}
+  <tr class="{{ '' if p.active else 'row-muted' }}"><td>{{ p.name }}</td><td>{{ p.kind }}</td><td class="num">{{ p.rate_per_mt|inr }}</td><td>{{ p.gstin }}</td>
+    <td>{{ p.mobile }}</td><td>{{ p.whatsapp }}</td><td>{{ p.email }}</td><td>{{ 'Active' if p.active else 'Inactive' }}</td>
+    <td>{% if can_edit %}<a href="?edit={{ p.id }}">Edit</a>{% endif %}</td></tr>
+  {% else %}<tr><td colspan="9" class="muted">No parties yet. Add your customers and contractors with their rate per MT.</td></tr>{% endfor %}</tbody>
+</table></div>
+{% endblock %}

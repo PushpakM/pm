@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Reports</h1><a class="btn" href="/reports.xlsx?{{ query }}">Download Excel</a></div>
+<section class="panel">
+  <h2 class="h3">Today</h2>
+  <div class="kpis">
+    <div><b>{{ today.trips }}</b><span>trips</span></div><div><b>{{ today.net_kg|mt }}</b><span>net MT</span></div>
+    <div><b>{{ today.open }}</b><span>open</span></div><div class="{{ 'warn' if today.flagged else '' }}"><b>{{ today.flagged }}</b><span>flagged</span></div>
+  </div>
+</section>
+<form method="get" action="/reports" class="filters">
+  <div class="field"><label for="from">From</label><input type="date" id="from" name="from" value="{{ f.from }}"></div>
+  <div class="field"><label for="to">To</label><input type="date" id="to" name="to" value="{{ f.to }}"></div>
+  <div class="field"><label for="group">Group by</label><select id="group" name="group">
+    {% for key, val in groups.items() %}<option value="{{ key }}" {% if f.group == key %}selected{% endif %}>{{ val[1] }}</option>{% endfor %}</select></div>
+  <button class="btn" type="submit">Show</button>
+</form>
+
+{% if daily %}
+<section class="panel">
+  <h2 class="h3">Net MT per day</h2>
+  <div class="bars" role="img" aria-label="Net tonnes per day from {{ f.from }} to {{ f.to }}">
+    {% for d in daily %}
+    <div class="bar-row"><span class="bar-label">{{ d.name[8:10] }}-{{ d.name[5:7] }}</span>
+      <span class="bar-track"><span class="bar-fill" data-pct="{{ ((d.net_kg or 0) / peak * 100)|round(1) if peak else 0 }}"></span></span>
+      <span class="num">{{ d.net_kg|mt }}</span></div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<div class="table-wrap"><table>
+  <thead><tr><th>{{ groups[f.group][1] }}</th><th class="num">Trips</th><th class="num">Net kg</th><th class="num">Net MT</th><th class="num">Flagged</th></tr></thead>
+  <tbody>{% for r in rows %}<tr><td>{{ r.name }}</td><td class="num">{{ r.trips }}</td><td class="num">{{ r.net_kg|kg }}</td><td class="num">{{ r.net_kg|mt }}</td><td class="num">{{ r.flagged }}</td></tr>
+  {% else %}<tr><td colspan="5" class="muted">No closed tickets in these dates.</td></tr>{% endfor %}</tbody>
+  {% if rows %}<tfoot><tr><td>Total</td><td class="num">{{ rows|sum(attribute='trips') }}</td><td class="num">{{ rows|sum(attribute='net_kg')|kg }}</td><td class="num">{{ rows|sum(attribute='net_kg')|mt }}</td><td class="num">{{ rows|sum(attribute='flagged') }}</td></tr></tfoot>{% endif %}
+</table></div>
+{% endblock %}

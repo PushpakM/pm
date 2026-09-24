@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Billing{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Billing</h1></div>
+<form method="get" action="/billing" class="filters panel">
+  <div class="field"><label for="party_id">Party</label><select id="party_id" name="party_id" required><option value="">— choose —</option>
+    {% for p in parties %}<option value="{{ p.id }}" {% if f.party_id == p.id|string %}selected{% endif %}>{{ p.name }} · {{ p.kind }} · ₹{{ p.rate_per_mt|inr }}/MT</option>{% endfor %}</select></div>
+  <div class="field"><label for="from">From</label><input type="date" id="from" name="from" value="{{ f.from }}"></div>
+  <div class="field"><label for="to">To</label><input type="date" id="to" name="to" value="{{ f.to }}"></div>
+  <div class="field"><label for="rate">Rate ₹/MT <span class="muted">(blank = party rate)</span></label><input id="rate" name="rate" inputmode="decimal" value="{{ f.rate }}"></div>
+  <button class="btn" type="submit">Preview</button>
+</form>
+
+{% if preview %}
+<section class="panel">
+  <h2 class="h3">{{ 'Bill to' if preview.party.kind == 'customer' else 'Work statement for' }} {{ preview.party.name }}, {{ preview.date_from }} to {{ preview.date_to }}</h2>
+  {% if preview.trips %}
+  <div class="bill-sum">
+    <div><span>Trips</span><b>{{ preview.trips }}</b></div>
+    <div><span>Net MT</span><b>{{ preview.net_kg|mt }}</b></div>
+    <div><span>Rate ₹/MT</span><b>{{ preview.rate|inr }}</b></div>
+    <div><span>Amount ₹</span><b>{{ preview.amount|inr }}</b></div>
+    <div><span>GST ₹</span><b>{{ (preview.cgst + preview.sgst + preview.igst)|inr }}</b></div>
+    <div class="total"><span>Total ₹</span><b>{{ preview.total|inr }}</b></div>
+  </div>
+  {% if user.role in ('admin','accounts') %}
+  <form method="post" action="/billing" class="actions">
+    <input type="hidden" name="csrf" value="{{ user.csrf }}">
+    <input type="hidden" name="party_id" value="{{ preview.party.id }}"><input type="hidden" name="from" value="{{ preview.date_from }}">
+    <input type="hidden" name="to" value="{{ preview.date_to }}"><input type="hidden" name="rate" value="{{ preview.rate }}">
+    <button class="btn btn-primary" type="submit">Create bill for these {{ preview.trips }} tickets</button>
+  </form>
+  {% endif %}
+  <details><summary>{{ preview.trips }} tickets</summary>
+    <div class="table-wrap"><table><thead><tr><th>Ticket</th><th>Date</th><th>Vehicle</th><th>Material</th><th class="num">Net kg</th></tr></thead><tbody>
+    {% for t in preview.tickets %}<tr><td><a href="/tickets/{{ t.id }}">{{ t.ticket_no }}</a></td><td>{{ t.closed_at|dt }}</td><td>{{ t.vehicle_no }}</td><td>{{ t.material_name or '—' }}</td><td class="num">{{ t.net_kg|kg }}</td></tr>{% endfor %}
+    </tbody></table></div></details>
+  {% else %}<p class="muted">No unbilled closed tickets for this party in these dates.</p>{% endif %}
+</section>
+{% endif %}
+
+<h2 class="h3">Bills</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>Bill</th><th>Party</th><th>Type</th><th>Period</th><th class="num">Trips</th><th class="num">Net MT</th><th class="num">Total ₹</th><th>Tally</th><th>Status</th></tr></thead>
+  <tbody>{% for b in bills %}
+  <tr class="{{ 'row-muted' if b.status == 'cancelled' else '' }}"><td><a href="/billing/{{ b.id }}">{{ b.bill_no }}</a></td><td>{{ b.party_name }}</td>
+    <td>{{ 'Sales' if b.kind == 'customer' else 'Purchase' }}</td><td>{{ b.period_from }} → {{ b.period_to }}</td><td class="num">{{ b.trips }}</td>
+    <td class="num">{{ b.total_net_kg|mt }}</td><td class="num">{{ b.total|inr }}</td><td>{{ 'Yes' if b.tally_exported_at else '—' }}</td>
+    <td><span class="chip chip-{{ b.status }}">{{ b.status }}</span></td></tr>
+  {% else %}<tr><td colspan="9" class="muted">No bills yet.</td></tr>{% endfor %}</tbody>
+</table></div>
+{% endblock %}

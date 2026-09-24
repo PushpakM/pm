@@ -1,0 +1,117 @@
+# Copy this file to config.toml and edit it.
+# config.toml holds passwords and API keys: keep it out of git and restrict it
+# to the Windows account that runs the weighbridge software.
+
+[company]
+name = "Shri Balaji Associates"
+address = "Chandrapur, Maharashtra"
+gstin = ""
+state_code = "27"            # Maharashtra; used to choose CGST+SGST vs IGST
+phone = ""
+site_name = "Mohada weighbridge"
+
+[server]
+host = "127.0.0.1"           # only this PC can open the app; see README before changing
+port = 8080
+data_dir = "data"            # database, ticket images and backups live here
+timezone = "Asia/Kolkata"
+
+[indicator]
+# source: "serial", "tcp" or "simulator"
+source = "simulator"
+port = "COM3"                # serial only
+baudrate = 9600
+bytesize = 8
+parity = "N"                 # N, E or O
+stopbits = 1
+host = "192.168.1.50"        # tcp only
+tcp_port = 4001
+# Regex that finds the weight inside one message from the indicator.
+# It must have a group named "weight"; optional groups "sign" and "status".
+# Run  python -m weighbridge sniff --port COM3  to see what your indicator sends.
+pattern = '(?P<sign>[-+])?\s*(?P<weight>\d+(?:\.\d+)?)'
+multiplier = 1.0             # 1 if the indicator sends kg, 1000 if it sends tonnes
+status_stable = ""           # e.g. "ST" if the indicator marks stable readings
+status_group_required = false
+stable_seconds = 3.0         # weight must hold this long before capture
+stable_tolerance_kg = 10     # allowed wobble while "stable" (one scale division)
+stale_after_seconds = 2.0    # reading older than this counts as no signal
+min_weight_kg = 500          # below this the platform counts as empty
+capacity_kg = 100000         # refuse captures above the stamped capacity
+
+[weighing]
+ticket_prefix = "WB"
+# stored-tare mode: a vehicle with a recent tare needs one pass only
+allow_stored_tare = true
+stored_tare_valid_days = 7
+tare_tolerance_pct = 5.0     # flag a tare that differs this much from the vehicle's usual tare
+open_ticket_warn_hours = 12
+
+[billing]
+gst_pct = 18.0
+bill_prefix = "BILL"
+
+[security]
+session_idle_minutes = 30
+session_max_hours = 12
+password_min_length = 12
+max_failed_logins = 5
+lockout_minutes = 15
+mfa_required_roles = ["admin"]
+cookie_secure = false        # set true only when served over HTTPS
+
+[backup]
+keep = 30                    # number of daily backups to keep
+extra_dir = ""               # e.g. "E:\\WB-Backup" (USB or synced folder) for a second copy
+
+[tally]
+enabled = false
+url = "http://127.0.0.1:9000"
+company = ""                 # exact company name in Tally
+sales_ledger = "Sales - Boulder"
+purchase_ledger = "Mining Contract Charges"
+cgst_output_ledger = "Output CGST"
+sgst_output_ledger = "Output SGST"
+igst_output_ledger = "Output IGST"
+cgst_input_ledger = "Input CGST"
+sgst_input_ledger = "Input SGST"
+igst_input_ledger = "Input IGST"
+
+[notify]
+send_on_ticket_close = true
+owner_email = ""             # daily summary goes here
+owner_whatsapp = ""          # e.g. 919800000000
+daily_summary_hour = 20      # 24h clock, local time
+
+[email]
+enabled = false
+host = "smtp.gmail.com"
+port = 587
+use_ssl = false              # true for port 465
+starttls = true
+username = ""
+password = ""                # use an app password, never your main password
+from_addr = ""
+
+[sms]
+enabled = false
+# Any DLT-registered HTTP gateway. Placeholders: {to} {message} {api_key} {sender} {template_id}
+method = "GET"
+url = "https://example-sms-provider.in/api/send?apikey={api_key}&sender={sender}&to={to}&message={message}&template_id={template_id}"
+api_key = ""
+sender = ""
+template_id = ""
+# Must match the DLT-approved template text exactly. Placeholders: {ticket_no} {vehicle} {net_t} {date} {company}
+template = "Ticket {ticket_no} Vehicle {vehicle} Net {net_t} MT on {date} - {company}"
+
+[whatsapp]
+enabled = false
+api_version = "v20.0"
+phone_number_id = ""
+access_token = ""
+# "template" works any time (needs a Meta-approved template with an IMAGE header
+# and 3 body variables: ticket no, vehicle, net MT). "free" only works within
+# 24 hours of the recipient messaging you.
+mode = "template"
+template_name = "weighbridge_ticket"
+template_language = "en"

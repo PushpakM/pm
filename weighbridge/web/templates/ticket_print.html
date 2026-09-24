@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{ t.ticket_no }}</title>
+<link rel="stylesheet" href="/static/print.css">
+<script src="/static/app.js" defer></script>
+</head>
+<body>
+<div class="no-print bar"><button type="button" id="print-btn">Print</button> <a href="/tickets/{{ t.id }}">Back</a></div>
+{% for copy in ['Customer copy', 'Office copy'] %}
+<article class="slip">
+  <header>
+    <div><h1>{{ company.name }}</h1>
+      <p>{{ company.site_name }} · {{ company.address }}{% if company.gstin %} · GSTIN {{ company.gstin }}{% endif %}</p></div>
+    <div class="right"><div class="copy">{{ copy }}</div><div class="no">{{ t.ticket_no }}</div></div>
+  </header>
+  <table class="facts">
+    <tr><th>Vehicle</th><td class="big">{{ t.vehicle_no }}</td><th>Party</th><td>{{ t.party_name or '—' }}</td></tr>
+    <tr><th>Material</th><td>{{ t.material_name or '—' }}</td><th>Operator</th><td>{{ t.second_user_name or t.first_user_name }}</td></tr>
+  </table>
+  <table class="weights">
+    <tr><th></th><th>Weight (kg)</th><th>Date &amp; time</th></tr>
+    <tr><td>First weighment</td><td class="num">{{ t.first_kg|kg }}{% if t.first_manual %} *{% endif %}</td><td>{{ t.first_at|dt }}</td></tr>
+    <tr><td>{{ 'Stored tare' if t.stored_tare else 'Second weighment' }}</td><td class="num">{{ t.second_kg|kg }}{% if t.second_manual %} *{% endif %}</td><td>{{ t.second_at|dt }}</td></tr>
+    <tr class="sum"><td>Gross</td><td class="num">{{ t.gross_kg|kg }}</td><td></td></tr>
+    <tr class="sum"><td>Tare</td><td class="num">{{ t.tare_kg|kg }}</td><td></td></tr>
+    <tr class="net"><td>NET</td><td class="num">{{ t.net_kg|kg }}</td><td>{{ t.net_kg|mt }} MT</td></tr>
+  </table>
+  <footer>
+    {% if t.flags %}<p>Note: {% for fl in t.flags.split(',') if fl %}{{ FLAG_LABELS.get(fl, fl) }}{% if not loop.last %}; {% endif %}{% endfor %}{% if t.first_manual or t.second_manual %} (* entered by hand){% endif %}</p>{% endif %}
+    <p>Verification code {{ (t.record_hash or '')[:16]|upper }}{% if t.status != 'closed' %} · <b>{{ t.status|upper }}</b>{% endif %}</p>
+    <div class="sign"><span>Driver</span><span>Operator</span></div>
+  </footer>
+</article>
+{% endfor %}
+</body>
+</html>

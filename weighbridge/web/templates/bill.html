@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{{ bill.bill_no }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>{{ bill.bill_no }} <span class="chip chip-{{ bill.status }}">{{ bill.status }}</span></h1>
+  <div class="actions no-print">
+    <button class="btn" type="button" id="print-btn">Print</button>
+    <a class="btn" href="/billing/{{ bill.id }}/bill.xlsx">Excel</a>
+    {% if bill.status == 'active' and user.role in ('admin','accounts') %}
+      <a class="btn" href="/billing/{{ bill.id }}/tally.xml">Tally XML</a>
+      {% if cfg.tally.enabled and not bill.tally_exported_at %}
+      <form method="post" action="/billing/{{ bill.id }}/tally"><input type="hidden" name="csrf" value="{{ user.csrf }}">
+        <button class="btn btn-primary" type="submit">Send to Tally</button></form>
+      {% endif %}
+    {% endif %}
+  </div>
+</div>
+{% if bill.tally_exported_at %}<p class="notice no-print">Sent to Tally or XML downloaded on {{ bill.tally_exported_at|dt }}. Don't import it twice.</p>{% endif %}
+<article class="panel bill-doc">
+  <header class="bill-head">
+    <div><h2>{{ company.name }}</h2><p class="small">{{ company.address }}{% if company.gstin %}<br>GSTIN {{ company.gstin }}{% endif %}</p></div>
+    <div class="right"><div class="eyebrow">{{ 'Tax invoice' if bill.kind == 'customer' else 'Work statement' }}</div><b>{{ bill.bill_no }}</b><div class="small">{{ bill.created_at|dt }}</div></div>
+  </header>
+  <p><b>{{ 'Bill to' if bill.kind == 'customer' else 'Contractor' }}:</b> {{ bill.party_name }}{% if bill.party_gstin %} · GSTIN {{ bill.party_gstin }}{% endif %}<br>
+     <span class="small">{{ bill.party_address }}</span><br><b>Period:</b> {{ bill.period_from }} to {{ bill.period_to }}</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Ticket</th><th>Date</th><th>Vehicle</th><th>Material</th><th class="num">Gross kg</th><th class="num">Tare kg</th><th class="num">Net kg</th></tr></thead>
+    <tbody>{% for t in bill.tickets %}<tr><td>{{ t.ticket_no }}</td><td>{{ t.closed_at|dt }}</td><td>{{ t.vehicle_no }}</td><td>{{ t.material_name or '—' }}</td>
+      <td class="num">{{ t.gross_kg|kg }}</td><td class="num">{{ t.tare_kg|kg }}</td><td class="num">{{ t.net_kg|kg }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  <table class="totals">
+    <tr><td>Trips</td><td class="num">{{ bill.trips }}</td></tr>
+    <tr><td>Net quantity</td><td class="num">{{ bill.total_net_kg|mt }} MT</td></tr>
+    <tr><td>Rate</td><td class="num">₹ {{ bill.rate_per_mt|inr }} / MT</td></tr>
+    <tr><td>Amount</td><td class="num">₹ {{ bill.amount|inr }}</td></tr>
+    {% if bill.igst %}<tr><td>IGST {{ bill.gst_pct }}%</td><td class="num">₹ {{ bill.igst|inr }}</td></tr>
+    {% else %}<tr><td>CGST {{ bill.gst_pct / 2 }}%</td><td class="num">₹ {{ bill.cgst|inr }}</td></tr>
+    <tr><td>SGST {{ bill.gst_pct / 2 }}%</td><td class="num">₹ {{ bill.sgst|inr }}</td></tr>{% endif %}
+    <tr class="grand"><td>Total</td><td class="num">₹ {{ bill.total|inr }}</td></tr>
+  </table>
+  <p class="small muted">Prepared by {{ bill.created_by_name }} from weighbridge tickets.</p>
+</article>
+{% if bill.status == 'active' and user.role == 'admin' %}
+<form method="post" action="/billing/{{ bill.id }}/cancel" class="panel stack no-print">
+  <input type="hidden" name="csrf" value="{{ user.csrf }}">
+  <h2 class="h3">Cancel this bill</h2>
+  <label for="reason">Reason</label><input id="reason" name="reason" required minlength="5">
+  <button class="btn btn-danger" type="submit">Cancel bill</button>
+</form>
+{% elif bill.status == 'cancelled' %}<p class="notice">Cancelled: {{ bill.cancel_reason }}</p>{% endif %}
+{% endblock %}
